@@ -1,30 +1,37 @@
+import datetime
+
 from django.shortcuts import render, redirect
 from rest_framework import viewsets
-from .serialazers import OrderSerializer
+from rest_framework.permissions import IsAuthenticated
+
 from .forms import OrderForm
-from django.contrib import messages
 from .models import Order, DocumentType, AccountType
-import datetime
+from .serialazers import OrderSerializer
+from django.contrib.auth.decorators import login_required
 
 
 class OrderViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     serializer_class = OrderSerializer
     queryset = Order.objects.all()
     http_method_names = ['get', 'head', 'post']
 
 
+@login_required(login_url='login')
 def home(request):
     time_threshold = datetime.datetime.now() - datetime.timedelta(hours=27)
     orders = Order.objects.filter(date__gt=time_threshold).filter(status__in=['waiting_for_review'])
     return render(request, "orders_check.html", {"orders": orders})
 
 
+@login_required
 def running_fail(request):
     time_threshold = datetime.datetime.now() - datetime.timedelta(hours=27)
     orders = Order.objects.filter(date__gt=time_threshold).filter(status__in=['fail', 'running', 'created'])
     return render(request, "running.html", {"orders": orders})
 
 
+@login_required
 def save_order(request):
     binance_id = request.POST['binance_id']
     account = request.POST['account']
@@ -43,6 +50,7 @@ def save_order(request):
     return redirect('/status')
 
 
+@login_required
 def edit_order(request, binance_id):
     order = Order.objects.get(binance_id=binance_id)
     initial_data = {
@@ -61,6 +69,7 @@ def edit_order(request, binance_id):
     return render(request, "edit_orders.html", data)
 
 
+@login_required
 def delete_order(request, binance_id):
     order = Order.objects.get(binance_id=binance_id)
     order.status = "cancelled"
@@ -68,6 +77,7 @@ def delete_order(request, binance_id):
     return redirect('/status')
 
 
+@login_required
 def delete_order_running(request, binance_id):
     order = Order.objects.get(binance_id=binance_id)
     order.status = "cancelled"
@@ -75,6 +85,7 @@ def delete_order_running(request, binance_id):
     return redirect('/running')
 
 
+@login_required
 def approve_order(request, binance_id):
     order = Order.objects.get(binance_id=binance_id)
     order.status = 'created'
@@ -83,6 +94,7 @@ def approve_order(request, binance_id):
     return redirect('/status')
 
 
+@login_required
 def approve_order_running(request, binance_id):
     order = Order.objects.get(binance_id=binance_id)
     order.status = 'created'

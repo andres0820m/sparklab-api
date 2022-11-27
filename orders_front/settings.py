@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'orders',
     'crispy_forms',
     'rest_framework',
+    'rest_framework_simplejwt',
 
 ]
 
@@ -120,3 +121,9 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+LOGIN_REDIRECT_URL = 'status/'
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
