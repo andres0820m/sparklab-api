@@ -1,0 +1,14 @@
+version: '3.6'
+
+services:
+  p2p_bot:
+    env_file:
+      - p2p.env
+    environment:
+      - TESSDATA_PREFIX=/usr/local/src/p2p/tessdata
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb
+    expose:
+      - 5037
+    network_mode: host
+    build: .
