@@ -1,14 +1,23 @@
 version: '3.6'
 
 services:
-  p2p_bot:
-    env_file:
-      - p2p.env
+  sparklab-db:
+    image: postgres:9.6
     environment:
-      - TESSDATA_PREFIX=/usr/local/src/p2p/tessdata
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=sparklab-db
     volumes:
-      - /dev/bus/usb:/dev/bus/usb
-    expose:
-      - 5037
-    network_mode: host
+      - sparklab_db_postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+  sparklab-api:
     build: .
+    volumes:
+      - sparklab_db_postgres_data:/var/lib/postgresql/data/
+    ports:
+      - 80:8000
+    depends_on:
+      - sparklab-db
+volumes:
+  sparklab_db_postgres_data:
