@@ -193,7 +193,9 @@ with open('binance.data', 'rb') as enc_file:
     encrypted = enc_file.read()
     decrypted = fernet.decrypt(encrypted)
     data = json.loads(decrypted.decode("utf-8"))
-    listener = BinanceListener(data=data, name='andres')
+    with open(CONFIG_PATH) as f:
+        config = Dict2Class(yaml.load(f, Loader=SafeLoader))
+    listener = BinanceListener(data=data, name='andres', config=config)
 listener.join_wss_stream()
 time.sleep(3)
 executor = OrderExecutor(ec_path='banks_data.data', listener=listener)

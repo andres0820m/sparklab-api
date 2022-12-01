@@ -22,8 +22,9 @@ DRIVE_PARENT_FOLDER = '1T3kw9-qer4o_zhlCOFt4-_gLaxxv8xh7'
 
 
 class BinanceInfoGetter(ABC):
-    def __init__(self, data, name):
+    def __init__(self, data, name, config):
         self.name = name
+        self.config = config
         self.__keep_wss = True
         self.__ws = None
         self.__secret_key = data[name]['secret_key']
@@ -195,7 +196,7 @@ class BinanceInfoGetter(ABC):
         retry = 3
         while retry != 0:
             try:
-                gfile = self.__drive.CreateFile({'parents': [{'id': '1T3kw9-qer4o_zhlCOFt4-_gLaxxv8xh7'}]})
+                gfile = self.__drive.CreateFile({'parents': [{'id': self.config.google_drive_parent}]})
                 gfile.SetContentFile(img_path)
                 gfile.Upload()
                 file_id = gfile['id']

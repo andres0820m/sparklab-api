@@ -4,11 +4,7 @@ bbva_fingerprint: True
 retry: 2
 x_max: 720
 y_max: 1600
-google_drive_parent: '1T3kw9-qer4o_zhlCOFt4-_gLaxxv8xh7'
-bancolombia_user_name: 'andresmejiajimenez08'
-bancolombia_password: '3009'
-bancolombia_hello_name: 'Andres'
-
+google_drive_parent: '1u2r7Hpc7F5IxR6qRbH01_bb5ELGITrwr'
 enrolling_account_message: "En este momento procedemos a inscribir tu cuenta"
 enrolling_account_done_message: "!! Se ha inscrito correctamente tu cuenta !! "
 enrolling_account_fail_message: "upps Fallo la inscripcion, parece que los datos no son correctos, porfavor verificar "
