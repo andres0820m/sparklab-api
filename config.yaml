@@ -4,6 +4,9 @@ bbva_fingerprint: True
 retry: 2
 x_max: 720
 y_max: 1600
+AUT_USER: 5726750321
+P2P_SCREENSHOT_BOT: '5688548008:AAHHM5B34p8YjhKhejvzWJeWF-TDit0dOxw'
+P2P_DASHBOARD_BOT: '5572206324:AAG_LVN8xLdFkxf4FY9IFwCmZMlV0gDWJyg'
 google_drive_parent: '1u2r7Hpc7F5IxR6qRbH01_bb5ELGITrwr'
 enrolling_account_message: "En este momento procedemos a inscribir tu cuenta"
 enrolling_account_done_message: "!! Se ha inscrito correctamente tu cuenta !! "

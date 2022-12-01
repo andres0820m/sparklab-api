@@ -1,5 +1,19 @@
 from enum import Enum
+import yaml
+from yaml.loader import SafeLoader
 
+CONFIG_PATH = 'config.yaml'
+
+
+class Dict2Class(object):
+
+    def __init__(self, my_dict):
+        for key in my_dict:
+            setattr(self, key, my_dict[key])
+
+
+with open(CONFIG_PATH) as f:
+    config = Dict2Class(yaml.load(f, Loader=SafeLoader))
 BANCOLOMBIA_APP_PACKAGE_NAME = 'com.todo1.mobile'
 BBVA_APP_PACKAGE_NAME = 'co.com.bbva.mb'
 KIWI_BROSER = 'com.kiwibrowser.browser'
@@ -10,11 +24,10 @@ VALID_BANKS = ['BBVA', 'bancolombia', 'pse_bbva']
 VALID_ACCOUNTS_TYPE = ['Ahorros', 'corriente', ""]
 VALID_DOCUMENT_TYPE = ['cc', 'pasaporte', 'cc_ex', ""]
 STATUS_DATA = {"created": '🔜', "running": '🏃‍', "finish": '✅', "done": '✅', "fail": '😩'}
-AUT_USER = 749278100
+AUT_USER = config.AUT_USER
 PARTNER_IDS = [2078612899, 1208740573, 1513124614]
-P2P_SCREENSHOT_BOT = '5626108765:AAEJdzS1_Zmu5uOsDu-HItPgvYdfcDFzk3I'
-P2P_DASHBOARD_BOT = '5572206324:AAG_LVN8xLdFkxf4FY9IFwCmZMlV0gDWJyg'
-CONFIG_PATH = 'config.yaml'
+P2P_SCREENSHOT_BOT = config.P2P_SCREENSHOT_BOT
+P2P_DASHBOARD_BOT = config.P2P_DASHBOARD_BOT
 API_URL = 'https://api.binance.com'
 INTERNAL_ORDERS_LINK = "http://localhost:8000/admin/orders/order/{}/change/"
 ORDER_STATUS_TO_RUN = ['created', 'fail', 'running']
