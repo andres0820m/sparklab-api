@@ -132,8 +132,10 @@ client_secrets.json
 mycreds.txt
 binance.data
 banks_data.data
+bancolombia_data.data
+filekey.key
 
 #pycharm
 .idea
 # imgs
-!imgs/*.png
+imgs/

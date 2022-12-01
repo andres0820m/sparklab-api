@@ -1,25 +1,23 @@
-from bank_automation import Bancolombia, Bbva, NequiPseBbva, NequiDavivienda
-from constants import P2P_SCREENSHOT_BOT, CONFIG_PATH, ORDER_STATUS_TO_RUN, AUT_USER, MAPPED_ACCOUNTS, MAPPED_DOCUMENTS, \
-    PARTNER_IDS
-from django.core.wsgi import get_wsgi_application
-import os
+import datetime
 import json
+import time
+
 import telebot
-from android_controller import AndroidController
 import yaml
 from PIL import Image
-from yaml.loader import SafeLoader
-from utils import Dict2Class, left_only_numbers
-import datetime
-import time
-from Errors import *
-from unidecode import unidecode
 from cryptography.fernet import Fernet
-from binance_listener import BinanceListener
+from unidecode import unidecode
+from yaml.loader import SafeLoader
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
-application = get_wsgi_application()
+from Errors import *
+from android_controller import AndroidController
+from bank_automation import Bancolombia, Bbva, NequiPseBbva, NequiDavivienda
+from binance_listener import BinanceListener
+from constants import P2P_SCREENSHOT_BOT, CONFIG_PATH, ORDER_STATUS_TO_RUN, AUT_USER, MAPPED_ACCOUNTS, MAPPED_DOCUMENTS, \
+    PARTNER_IDS
 from orders.models import Order
+from orders_wrapped import OrderWrapped
+from utils import Dict2Class, left_only_numbers
 
 
 class OrderExecutor:
@@ -29,6 +27,7 @@ class OrderExecutor:
         self.android_controller = AndroidController(dark_mode=dark_mode)
         self.__telegram_bot = telebot.TeleBot(P2P_SCREENSHOT_BOT)
         self.listener = listener
+        self.order_wrapped = OrderWrapped()
         self.__bancolombia = Bancolombia(android_controller=self.android_controller, ec_path=ec_path)
         self.__bbva = Bbva(android_controller=self.android_controller, ec_path=ec_path)
         self.__nequi_pse_bbva = NequiPseBbva(android_controller=self.android_controller, ec_path=ec_path,
@@ -51,39 +50,49 @@ class OrderExecutor:
         counter = order.fail_retry
         counter += 1
         order.fail_retry = counter
-        order.save()
 
     def execute(self):
         while True:
-            orders = self.__read_db_info()
+            orders = self.order_wrapped.get_orders()
             for order in orders:
                 if order.status in ORDER_STATUS_TO_RUN:
                     try:
                         if order.fail_retry <= self.config.retry:
                             self.listener.send_message(binance_id=order.binance_id,
                                                        message="Se esta procesando tu orden en este momento")
-                            self.__update_status(status='running', order=order)
+                            order.status = 'running'
+                            self.order_wrapped.update_order(order)
                             if order.bank.bank == 'pse_bbva':
                                 self.__nequi_pse_bbva.pay(amount=order.amount, number=order.account,
                                                           binance_id=order.binance_id)
                             if order.bank.bank == "bancolombia":
+                                status = self.order_wrapped.check_account(order.account)
+                                print(status)
                                 self.__bancolombia.login(fingerprint=self.config.bancolombia_fingerprint)
+                                if status.status_code == 200:
+                                    order.subscribe = True
+                                    self.order_wrapped.update_order(order)
                                 try:
-                                    self.listener.send_message(binance_id=order.binance_id,
-                                                               message=self.config.enrolling_account_message)
-                                    self.__bancolombia.enroll_account(num_account=left_only_numbers(order.account),
-                                                                      nickname=unidecode(order.name),
-                                                                      acc_type=MAPPED_ACCOUNTS[
-                                                                          order.account_type.account_type],
-                                                                      id_type=MAPPED_DOCUMENTS[
-                                                                          order.document_type.document],
-                                                                      id_number=left_only_numbers(
-                                                                          order.document_number),
-                                                                      is_nequi=order.is_contact)
-                                    self.listener.send_message(binance_id=order.binance_id,
-                                                               message=self.config.enrolling_account_done_message)
+                                    if not order.subscribe:
+                                        self.listener.send_message(binance_id=order.binance_id,
+                                                                   message=self.config.enrolling_account_message)
+                                        self.__bancolombia.enroll_account(num_account=left_only_numbers(order.account),
+                                                                          nickname=unidecode(order.name),
+                                                                          acc_type=MAPPED_ACCOUNTS[
+                                                                              order.account_type.account_type],
+                                                                          id_type=MAPPED_DOCUMENTS[
+                                                                              order.document_type.document],
+                                                                          id_number=left_only_numbers(
+                                                                              order.document_number),
+                                                                          is_nequi=order.is_contact)
+                                        self.listener.send_message(binance_id=order.binance_id,
+                                                                   message=self.config.enrolling_account_done_message)
+                                        order.subscribe = True
+                                        self.order_wrapped.update_order(order)
+
                                 except (AlreadyEnrolledAccount, AlreadyUsedNickname):
-                                    pass
+                                    order.subscribe = True
+                                    self.order_wrapped.update_order(order)
                                 self.listener.send_message(binance_id=order.binance_id,
                                                            message=self.config.process_payment_message)
                                 self.__bancolombia.transfer(nickname=order.account, amount=order.amount,
@@ -102,7 +111,8 @@ class OrderExecutor:
                                                                 number=left_only_numbers(order.account),
                                                                 binance_id=order.binance_id)
                             print("Trasancion done !!")
-                            self.__update_status("done", order=order)
+                            order.status = 'done'
+                            self.order_wrapped.update_order(order)
                             img = Image.open('imgs/{}.png'.format(order.binance_id))
                             img_link = self.listener.upload_img_to_drive('imgs/{}.png'.format(order.binance_id))
                             self.listener.send_message(binance_id=order.binance_id,
@@ -135,7 +145,7 @@ class OrderExecutor:
                     except WrongDataOrAccountAlreadySubscribe:
                         order.fail_retry = 3
                         order.status = 'fail'
-                        order.save()
+                        self.order_wrapped.update_order(order)
                         self.__telegram_bot.send_message(chat_id=AUT_USER,
                                                          text="datos incorrecto o cuenta ya inscrita en la orden {}".format(
                                                              order.binance_id))
@@ -143,7 +153,7 @@ class OrderExecutor:
                     except TimeoutButAccountHasBeenSubscribe:
                         order.fail_retry = 3
                         order.status = 'fail'
-                        order.save()
+                        self.order_wrapped.update_order(order)
                         self.__telegram_bot.send_message(chat_id=AUT_USER,
                                                          text="la orden {}, fallo pero se inscrbio la cuenta, borrar y volver a intentar".format(
                                                              order.binance_id))
@@ -152,7 +162,7 @@ class OrderExecutor:
                     except TransferFailAtTheEnd:
                         order.fail_retry = 3
                         order.status = 'fail'
-                        order.save()
+                        self.order_wrapped.update_order(order)
                         if order.bank.bank == "BBVA":
                             text = "la orden {} fallo al final  y se inscribio!! revisar app del banco !!"
                         else:
@@ -160,10 +170,21 @@ class OrderExecutor:
                         self.__telegram_bot.send_message(chat_id=AUT_USER,
                                                          text=text.format(order.binance_id))
 
+                    except (BancolombiaError, NequiAccountError):
+                        order.status = 'waiting_for_review'
+                        self.order_wrapped.update_order(order)
+                        try:
+                            self.__telegram_bot.send_message(chat_id=AUT_USER,
+                                                             text="the order {} have wrong account data !!".format(
+                                                                 order.binance_id))
+                        except:
+                            pass
+
                     except (GettingTokenError, ContinueForTokenError, TimeoutError):
                         print("Trasaction fails !!")
-                        self.__update_status('fail', order=order)
+                        order.status = 'fail'
                         self.__update_counter(order=order)
+                        self.order_wrapped.update_order(order)
             time.sleep(1)
 
 

@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import User
 
 
 class Bank(models.Model):
@@ -24,7 +23,6 @@ class AccountType(models.Model):
 
 
 class Order(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
     bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
     binance_id = models.CharField(primary_key=True, blank=False, null=False, max_length=1000)
     pay_id = models.CharField(max_length=500, blank=False, null=False)
@@ -39,6 +37,7 @@ class Order(models.Model):
     date = models.DateTimeField("When Created", auto_now_add=True)
     status = models.CharField(max_length=500, blank=False, null=False, default="created")
     fail_retry = models.IntegerField(null=False, blank=False, default=0)
+    subscribe = models.BooleanField(default=False, blank=True, null=True)
 
     def __str__(self):
         return " {} -- {}".format(self.binance_id, self.status)

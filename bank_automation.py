@@ -1,7 +1,7 @@
 import time
 
 from enum import Enum
-
+import secrets
 from android_controller import AndroidController
 from android_controller import ElementNotFound
 from android_controller import keycodes as keycodes
@@ -33,12 +33,28 @@ class Bancolombia:
         self.__controller.start_app(BANCOLOMBIA_APP_PACKAGE_NAME)
         time.sleep(0.5)
 
+    def check_transfer_error(self, check_text, retry=30, click_on_continue=False):
+        while retry != 0:
+            if self.__controller.find_text(check_text):
+                self.__controller.click_on_text(check_text)
+                break
+            if self.__controller.find_text("intentalo mas tarde"):
+                if click_on_continue:
+                    self.__controller.click_on_text("intentalo mas tarde")
+                else:
+                    raise NequiAccountError
+            if self.__controller.find_text("verifica la inscripcion"):
+                raise BancolombiaError
+            retry -= 1
+
     def login(self, fingerprint=False):
         self.__close_app()
         self.__open_app()
         self.__print('Esperando que la aplicacion se inicie...')
         time.sleep(2)
-        self.__controller.click_on_text('Iniciar sesion', timeout=20.0)
+
+        self.check_transfer_error(check_text='Iniciar sesion')
+
         if fingerprint:
             self.__controller.click_on_text('CANCELAR', timeout=20.0)
         self.__print('Ingresando usuario...')
@@ -70,7 +86,7 @@ class Bancolombia:
                        is_nequi=False
                        ):
         num_account = str_only_numbers(num_account)
-        nickname = str_only_alphanumeric(nickname)
+        nickname = secrets.token_hex(nbytes=16)
         id_number = str_only_numbers(id_number)
         self.__print(f'Enrolling account {nickname}:')
         self.__print(f'  Account number: {num_account}')
@@ -138,8 +154,8 @@ class Bancolombia:
         self.__controller.click_on_text('Continuar', timeout=15.0)
         self.__controller.click_on_text('Inscribir', timeout=15.0)
         option, _ = self.__controller.wait_for_any_of_this_texts(
-            ['Inscripcion Exitosa', 'El producto ya se encuentra'],
-            timeout=120, min_y=0, max_y=0.6
+            ['Inscripcion Exitosa', 'El producto ya se encuentra', 'verifica la inscripcion', 'intentalo mas tarde'],
+            timeout=120
         )
         if option == 0:
             self.__controller.click_on_text('Inicio', timeout=15.0)
@@ -149,6 +165,10 @@ class Bancolombia:
             self.__controller.click_on_text('Regresar', min_y=0.63, max_y=0.7, timeout=15)
             self.__controller.click_on_text('Inicio', timeout=10.0)
             raise AlreadyEnrolledAccount
+        elif option == 2:
+            raise BancolombiaError
+        elif option == 3:
+            raise NequiAccountError
 
     def transfer(self,
                  nickname: str,

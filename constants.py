@@ -5,6 +5,7 @@ BBVA_APP_PACKAGE_NAME = 'co.com.bbva.mb'
 KIWI_BROSER = 'com.kiwibrowser.browser'
 NEQUI_PSE_URL = 'https://recarga.nequi.com.co/'
 ORDERS_URL = 'http://localhost:8000/orders/{}/'
+MAIN_URL = 'http://localhost:8000/{}'
 VALID_BANKS = ['BBVA', 'bancolombia', 'pse_bbva']
 VALID_ACCOUNTS_TYPE = ['Ahorros', 'corriente', ""]
 VALID_DOCUMENT_TYPE = ['cc', 'pasaporte', 'cc_ex', ""]
@@ -60,3 +61,11 @@ MAPPED_ORDER_KEY = {'binance_id': 'binance_id',
                     'document_type': 'document_type'}
 NUMBERS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
 KEYS_FOR_CHECK = ['name', 'id_number', 'account_number']
+API_HEADERS = {'Accept': '*/*',
+               'Accept-Encoding': 'gzip, deflate',
+               'Connection': 'close',
+               'Content-Length': '16',
+               'Content-Type': 'application/json',
+               'Host': 'httpbin.org',
+               'User-Agent': 'python-requests/2.4.3 CPython/3.4.0',
+               'X-Request-Id': 'xx-xx-xx'}
