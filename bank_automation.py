@@ -52,9 +52,7 @@ class Bancolombia:
         self.__open_app()
         self.__print('Esperando que la aplicacion se inicie...')
         time.sleep(2)
-
-        self.check_transfer_error(check_text='Iniciar sesion')
-
+        self.__controller.click_on_text('iniciar sesion', max_y=0.4, use_canny=True, timeout=20.0)
         if fingerprint:
             self.__controller.click_on_text('CANCELAR', timeout=20.0)
         self.__print('Ingresando usuario...')
@@ -65,7 +63,7 @@ class Bancolombia:
         self.__controller.click_on_text('CONTINUAR', timeout=5.0)
         self.__print('Ingresando contrasena')
         self.__controller.wait_for_text("ingresa la clave", timeout=40)
-        self.__controller.input_text('3009')  # self.bank_data['password']
+        self.__controller.input_text(self.bank_data['password'])
         time.sleep(1)
         self.__controller.input_keyevent(keycodes.KEYCODE_ENTER)
         self.__controller.click_on_text('CONTINUAR', timeout=15)
