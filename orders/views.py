@@ -8,6 +8,7 @@ import datetime
 from rest_framework.response import Response
 from rest_framework import status
 import json
+from django.contrib.sites.shortcuts import get_current_site
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -29,11 +30,13 @@ def running_fail(request):
 
 
 def save_order(request):
+    print(request.get_full_path())
     binance_id = request.POST['binance_id']
     account = request.POST['account']
     document = request.POST['document_number']
     document_type = DocumentType(pk=request.POST['document_type'])
     account_type = AccountType(pk=request.POST['account_type'])
+    fail_retry = request.POST['fail_retry']
     name = request.POST['name']
     order = Order.objects.get(binance_id=binance_id)
     order.account = account
@@ -42,8 +45,29 @@ def save_order(request):
     order.account_type = account_type
     order.name = name
     order.status = 'created'
+    order.fail_retry = fail_retry
     order.save()
     return redirect('/status')
+
+
+def save_order_running(request):
+    binance_id = request.POST['binance_id']
+    account = request.POST['account']
+    document = request.POST['document_number']
+    document_type = DocumentType(pk=request.POST['document_type'])
+    account_type = AccountType(pk=request.POST['account_type'])
+    fail_retry = request.POST['fail_retry']
+    name = request.POST['name']
+    order = Order.objects.get(binance_id=binance_id)
+    order.account = account
+    order.document_type = document_type
+    order.document_number = document
+    order.account_type = account_type
+    order.name = name
+    order.status = 'created'
+    order.fail_retry = fail_retry
+    order.save()
+    return redirect('/running')
 
 
 def edit_order(request, binance_id):
@@ -62,6 +86,24 @@ def edit_order(request, binance_id):
         'order_form': order_form
     }
     return render(request, "edit_orders.html", data)
+
+
+def edit_order_running(request, binance_id):
+    order = Order.objects.get(binance_id=binance_id)
+    initial_data = {
+        'binance_id': order.binance_id,
+        'account': order.account,
+        'document_number': order.document_number,
+        'document_type': order.document_type,
+        'account_type': order.account_type,
+        'name': order.name
+    }
+    order_form = OrderForm(initial=initial_data)
+    data = {
+        'order': order,
+        'order_form': order_form
+    }
+    return render(request, "edit_orders_running.html", data)
 
 
 def delete_order(request, binance_id):

@@ -1,0 +1,20 @@
+{% extends "./base.html" %}
+
+{% block title %} Edicion de ordenes {% endblock %}
+
+{% block body %}
+{% load crispy_forms_tags %}
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+        <h2>Order Edit</h2>
+        <div class="card">
+            <div class="card-body">
+                <form action="/save_edit_running/" method="POST">{% csrf_token %}
+                    {{order_form |crispy}}
+                    <button type="submit" class="btn btn-success btn-block text-white">Approve</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
