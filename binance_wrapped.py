@@ -14,6 +14,7 @@ from Errors import OrderAsPaidError
 from constants import API_URL
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
+from orders_wrapped import OrderWrapped
 
 CREDENTIALS_URL = '/sapi/v1/c2c/chat/retrieveChatCredential'
 ORDER_PAID_URL = '/sapi/v1/c2c/orderMatch/markOrderAsPaid'
@@ -22,9 +23,10 @@ DRIVE_PARENT_FOLDER = '1T3kw9-qer4o_zhlCOFt4-_gLaxxv8xh7'
 
 
 class BinanceInfoGetter(ABC):
-    def __init__(self, data, name, config):
+    def __init__(self, data, name, config, order_wrapped):
         self.name = name
         self.config = config
+        self.order_wrapped = order_wrapped
         self.__keep_wss = True
         self.__ws = None
         self.__secret_key = data[name]['secret_key']

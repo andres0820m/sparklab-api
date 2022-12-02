@@ -3,12 +3,10 @@ from rest_framework import viewsets
 from .serialazers import OrderSerializer
 from .forms import OrderForm
 from rest_framework.views import APIView
-from .models import Order, DocumentType, AccountType
+from .models import Order, DocumentType, AccountType, Bank
 import datetime
 from rest_framework.response import Response
 from rest_framework import status
-import json
-from django.contrib.sites.shortcuts import get_current_site
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -165,3 +163,32 @@ class PotentialOrders(APIView):
         time_threshold = datetime.datetime.now() - datetime.timedelta(hours=15)
         orders = Order.objects.filter(date__gt=time_threshold).values()
         return Response(orders, status=status.HTTP_200_OK)
+
+
+class GetBank(APIView):
+
+    def get(self, request):
+        try:
+            return Response(Bank.objects.filter(bank=request.data['bank']).values()[0], status=status.HTTP_200_OK)
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetAccount(APIView):
+
+    def get(self, request):
+        try:
+            return Response(AccountType.objects.filter(account_type=request.data['account']).values()[0],
+                            status=status.HTTP_200_OK)
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetDocument(APIView):
+
+    def get(self, request):
+        try:
+            return Response(DocumentType.objects.filter(document=request.data['document']).values()[0],
+                            status=status.HTTP_200_OK)
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)

@@ -73,7 +73,7 @@ MAPPED_ORDER_KEY = {'binance_id': 'binance_id',
                     'account_type': 'account_type',
                     'document_type': 'document_type'}
 NUMBERS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
-KEYS_FOR_CHECK = ['name', 'id_number', 'account_number']
+KEYS_FOR_CHECK = ['name', 'id_number', 'account_number', 'account_type']
 API_HEADERS = {'Accept': '*/*',
                'Accept-Encoding': 'gzip, deflate',
                'Connection': 'close',

@@ -3,7 +3,8 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from orders.views import OrderViewSet, home, edit_order, save_order, delete_order, approve_order, running_fail, \
-    delete_order_running, approve_order_running, CheckAccount, PotentialOrders, save_order_running, edit_order_running
+    delete_order_running, approve_order_running, CheckAccount, PotentialOrders, save_order_running, edit_order_running, \
+    GetBank, GetAccount, GetDocument
 
 router = DefaultRouter()
 router.register(r'orders', OrderViewSet, basename="snippets")
@@ -22,6 +23,9 @@ urlpatterns = [
     path('running/delete_order/<binance_id>', delete_order_running),
     path('', include(router.urls)),
     path('check_account/', CheckAccount.as_view()),
-    path('potential_orders/', PotentialOrders.as_view())
+    path('potential_orders/', PotentialOrders.as_view()),
+    path('get_bank/', GetBank.as_view()),
+    path('get_account/', GetAccount.as_view()),
+    path('get_document/', GetDocument.as_view()),
 
 ]

@@ -47,8 +47,6 @@ def mapped_dict_from_data(acc_dict, data, bank):
             account_data[acc_data['fieldName']] = acc_data['fieldValue']
     account_data = {k.lower().replace(" ", "_"): v for k, v in account_data.items()}
     acc_keys = account_data.keys()
-
-    print(acc_keys)
     for key in acc_keys:
         if key not in KEYS_FOR_CHECK:
             acc_dict[key] = None

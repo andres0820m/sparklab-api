@@ -1,10 +1,15 @@
+import os
 import requests
 from requests.exceptions import ConnectTimeout
 
+from django.forms.models import model_to_dict
+from django.core.wsgi import get_wsgi_application
 from constants import API_HEADERS, MAIN_URL
 from Errors import ApiConnectionError
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+application = get_wsgi_application()
 from orders.models import Order
-from django.forms.models import model_to_dict
 
 
 class OrderWrapped:
@@ -47,3 +52,26 @@ class OrderWrapped:
         json_data = model_to_dict(order)
         data = self.__send_request(method="PUT", url=url, json_data=json_data)
         return data
+
+    def get_bank(self, bank):
+        url = MAIN_URL.format('get_bank/')
+        json_data = {"bank": bank}
+        data = self.__send_request(method='GET', url=url, json_data=json_data).json()
+        return data['id']
+
+    def get_account(self, account):
+        url = MAIN_URL.format('get_account/')
+        json_data = {"account": account}
+        data = self.__send_request(method='GET', url=url, json_data=json_data).json()
+        return data['id']
+
+    def get_document(self, document):
+        url = MAIN_URL.format('get_document/')
+        json_data = {"document": document}
+        data = self.__send_request(method='GET', url=url, json_data=json_data).json()
+        return data['id']
+
+    def create_order(self, order):
+        print(order)
+        url = MAIN_URL.format('orders/')
+        print(self.__send_request(method='POST', url=url, json_data=order))
