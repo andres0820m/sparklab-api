@@ -182,11 +182,13 @@ class OrderExecutor:
                             except:
                                 pass
 
-                        except (GettingTokenError, ContinueForTokenError, TimeoutError):
+                        except (GettingTokenError, ContinueForTokenError, TimeoutError, TransferNotFinished):
                             print("Trasaction fails !!")
                             order.status = 'fail'
                             self.__update_counter(order=order)
                             self.order_wrapped.update_order(order)
+                            self.__telegram_bot.send_message(chat_id=AUT_USER,
+                                                             text="order {} fails !!".format(order.binance_id))
 
                 time.sleep(1)
             except ApiConnectionError:

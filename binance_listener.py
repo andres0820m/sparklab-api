@@ -27,6 +27,7 @@ class BinanceListener(BinanceInfoGetter):
         data = json.loads(message)
         binance_id = data['orderNo']
         print(Fore.GREEN + str(self.get_order_info(binance_id=binance_id)['data']))
+        print(type(requests.get(ORDERS_URL.format(binance_id))), '--------')
         status = requests.get(ORDERS_URL.format(binance_id)).status_code
         print(Fore.GREEN + str(status))
         if status == 404:
@@ -52,7 +53,10 @@ class BinanceListener(BinanceInfoGetter):
                 order_account_type = self.order_wrapped.get_account(account='Ahorros')
             acc_dict['account_type'] = order_account_type
             order_data = dict((MAPPED_ORDER_KEY[key], value) for (key, value) in acc_dict.items())
+            user = self.order_wrapped.get_user()
+            print(user, '------------------')
             order_data['status'] = 'waiting_for_review'
+            order_data['user'] = user
             self.order_wrapped.create_order(order_data)
             print(Fore.GREEN + "order with id:{} was created".format(binance_id))
 

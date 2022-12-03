@@ -208,8 +208,14 @@ class Bancolombia:
         self.__controller.click_on_text('Enviar dinero', timeout=15.0)
         time.sleep(7)
         try:
-            self.__controller.wait_for_text('exitosa', 120)
-            self.__controller.save_screen(binance_id)
+            option, _ = self.__controller.wait_for_any_of_this_texts(
+                ['exitosa', 'intentalo mas tarde'],
+                timeout=120
+            )
+            if option == 0:
+                self.__controller.save_screen(binance_id)
+            else:
+                raise TransferNotFinished
         except TimeoutError:
             raise TransferFailAtTheEnd
         try:

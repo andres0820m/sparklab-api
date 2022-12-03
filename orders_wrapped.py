@@ -22,10 +22,11 @@ class OrderWrapped:
     def __refresh_token(self):
         refresh_url = MAIN_URL.format('api/token/refresh/')
         json_data = {"refresh": self.__refresh}
-        data = self.__send_request(method='POST', url=refresh_url, json_data=json_data).json()
+        data = self.__send_request(method='POST', url=refresh_url, json_data=json_data)
         if data.status_code == 401:
             self.__login()
         else:
+            data = data.json()
             self.__token = data['access']
 
     def __login(self):
@@ -74,7 +75,8 @@ class OrderWrapped:
 
     def update_order(self, order: Order):
         binance_id = order.binance_id
-        url = MAIN_URL.format('orders/' + binance_id + '/')
+        url = MAIN_URL.format('api/v1/orders/' + binance_id + '/')
+        print(url)
         json_data = model_to_dict(order)
         data = self.__send_request(method="PUT", url=url, json_data=json_data)
         return data
@@ -99,5 +101,11 @@ class OrderWrapped:
 
     def create_order(self, order):
         print(order)
-        url = MAIN_URL.format('orders/')
+        url = MAIN_URL.format('api/v1/orders/')
+        print(url)
         print(self.__send_request(method='POST', url=url, json_data=order))
+
+    def get_user(self):
+        url = MAIN_URL.format('get_user/')
+        user = self.__send_request(method='GET', url=url).json()
+        return user
