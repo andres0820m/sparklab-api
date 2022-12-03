@@ -7,26 +7,32 @@ from .models import Order, DocumentType, AccountType, Bank
 import datetime
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.decorators import login_required
 
 
 class OrderViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
     serializer_class = OrderSerializer
     queryset = Order.objects.all()
     http_method_names = ['get', 'head', 'post', 'put']
 
 
+@login_required
 def home(request):
     time_threshold = datetime.datetime.now() - datetime.timedelta(hours=27)
     orders = Order.objects.filter(date__gt=time_threshold).filter(status__in=['waiting_for_review'])
     return render(request, "orders_check.html", {"orders": orders})
 
 
+@login_required
 def running_fail(request):
     time_threshold = datetime.datetime.now() - datetime.timedelta(hours=27)
     orders = Order.objects.filter(date__gt=time_threshold).filter(status__in=['fail', 'running', 'created'])
     return render(request, "running.html", {"orders": orders})
 
 
+@login_required
 def save_order(request):
     print(request.get_full_path())
     binance_id = request.POST['binance_id']
@@ -48,6 +54,7 @@ def save_order(request):
     return redirect('/status')
 
 
+@login_required
 def save_order_running(request):
     binance_id = request.POST['binance_id']
     account = request.POST['account']
@@ -68,6 +75,7 @@ def save_order_running(request):
     return redirect('/running')
 
 
+@login_required
 def edit_order(request, binance_id):
     order = Order.objects.get(binance_id=binance_id)
     initial_data = {
@@ -86,6 +94,7 @@ def edit_order(request, binance_id):
     return render(request, "edit_orders.html", data)
 
 
+@login_required
 def edit_order_running(request, binance_id):
     order = Order.objects.get(binance_id=binance_id)
     initial_data = {
@@ -104,6 +113,7 @@ def edit_order_running(request, binance_id):
     return render(request, "edit_orders_running.html", data)
 
 
+@login_required
 def delete_order(request, binance_id):
     order = Order.objects.get(binance_id=binance_id)
     order.status = "cancelled"
@@ -111,6 +121,7 @@ def delete_order(request, binance_id):
     return redirect('/status')
 
 
+@login_required
 def delete_order_running(request, binance_id):
     order = Order.objects.get(binance_id=binance_id)
     order.status = "cancelled"
@@ -118,6 +129,7 @@ def delete_order_running(request, binance_id):
     return redirect('/running')
 
 
+@login_required
 def approve_order(request, binance_id):
     order = Order.objects.get(binance_id=binance_id)
     order.status = 'created'
@@ -126,6 +138,7 @@ def approve_order(request, binance_id):
     return redirect('/status')
 
 
+@login_required
 def approve_order_running(request, binance_id):
     order = Order.objects.get(binance_id=binance_id)
     order.status = 'created'
@@ -135,6 +148,7 @@ def approve_order_running(request, binance_id):
 
 
 class CheckAccount(APIView):
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request):
         account = request.data['account']
@@ -159,6 +173,8 @@ class CheckAccount(APIView):
 
 
 class PotentialOrders(APIView):
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request):
         time_threshold = datetime.datetime.now() - datetime.timedelta(hours=15)
         orders = Order.objects.filter(date__gt=time_threshold).values()
@@ -166,6 +182,7 @@ class PotentialOrders(APIView):
 
 
 class GetBank(APIView):
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request):
         try:
@@ -175,6 +192,7 @@ class GetBank(APIView):
 
 
 class GetAccount(APIView):
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request):
         try:
@@ -185,6 +203,7 @@ class GetAccount(APIView):
 
 
 class GetDocument(APIView):
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request):
         try:
@@ -192,3 +211,10 @@ class GetDocument(APIView):
                             status=status.HTTP_200_OK)
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetUser(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        return Response(request.user.pk, status=status.HTTP_200_OK)

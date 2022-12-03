@@ -16,6 +16,12 @@ DATABASES = {
 # Since we only have one app which we use
 INSTALLED_APPS = (
     'orders',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
 )
 
 # Write a random secret key here

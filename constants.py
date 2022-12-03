@@ -76,9 +76,4 @@ NUMBERS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
 KEYS_FOR_CHECK = ['name', 'id_number', 'account_number', 'account_type']
 API_HEADERS = {'Accept': '*/*',
                'Accept-Encoding': 'gzip, deflate',
-               'Connection': 'close',
-               'Content-Length': '16',
-               'Content-Type': 'application/json',
-               'Host': 'httpbin.org',
-               'User-Agent': 'python-requests/2.4.3 CPython/3.4.0',
-               'X-Request-Id': 'xx-xx-xx'}
+               'Content-Type': 'application/json'}

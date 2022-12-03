@@ -47,7 +47,6 @@ class BinanceListener(BinanceInfoGetter):
                 order_document = self.order_wrapped.get_document('cc')
             acc_dict['document_type'] = order_document
             try:
-                print(acc_dict['account_type'], "-------------------")
                 order_account_type = self.order_wrapped.get_account(account=acc_dict['account_type'])
             except:
                 order_account_type = self.order_wrapped.get_account(account='Ahorros')

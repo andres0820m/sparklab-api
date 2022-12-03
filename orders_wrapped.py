@@ -1,6 +1,6 @@
 import os
 import requests
-from requests.exceptions import ConnectTimeout
+from requests.exceptions import ConnectTimeout, ConnectionError
 
 from django.forms.models import model_to_dict
 from django.core.wsgi import get_wsgi_application
@@ -15,14 +15,40 @@ from orders.models import Order
 class OrderWrapped:
     def __init__(self):
         self._headers = API_HEADERS
+        data = self.__login()
+        self.__token = data['access']
+        self.__refresh = data['refresh']
 
-    def __send_request(self, method, url, params={}, json_data={}, retry=3, timeout=5):
+    def __refresh_token(self):
+        refresh_url = MAIN_URL.format('api/token/refresh/')
+        json_data = {"refresh": self.__refresh}
+        data = self.__send_request(method='POST', url=refresh_url, json_data=json_data).json()
+        if data.status_code == 401:
+            self.__login()
+        else:
+            self.__token = data['access']
+
+    def __login(self):
+        url = MAIN_URL.format('api/token/')
+        json_data = {"username": "andres", "password": "andres"}
+        data = self.__send_request(method="POST", url=url, json_data=json_data, use_auth=False)
+        return data.json()
+
+    def __send_request(self, method, url, params={}, json_data={}, retry=3, timeout=5, use_auth=True):
+        continue_request = False
         while retry != 0:
             try:
-                data = requests.request(method=method, url=url, timeout=timeout, json=json_data, params=params,
-                                        headers=self._headers)
+                while not continue_request:
+                    if use_auth:
+                        self._headers['Authorization'] = 'Bearer {}'.format(self.__token)
+                    data = requests.request(method=method, url=url, timeout=timeout, json=json_data, params=params,
+                                            headers=self._headers)
+                    if data.status_code == 401:
+                        self.__refresh_token()
+                    else:
+                        continue_request = True
                 return data
-            except ConnectTimeout:
+            except (ConnectTimeout, ConnectionError):
                 retry -= 1
         raise ApiConnectionError
 
