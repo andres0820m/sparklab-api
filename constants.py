@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 import yaml
 from yaml.loader import SafeLoader
@@ -18,8 +19,12 @@ BANCOLOMBIA_APP_PACKAGE_NAME = 'com.todo1.mobile'
 BBVA_APP_PACKAGE_NAME = 'co.com.bbva.mb'
 KIWI_BROSER = 'com.kiwibrowser.browser'
 NEQUI_PSE_URL = 'https://recarga.nequi.com.co/'
-ORDERS_URL = 'http://localhost:8000/orders/{}/'
-MAIN_URL = 'http://localhost:8000/{}'
+if os.environ['running_mode'] == 'local':
+    ORDERS_URL = 'http://localhost:8000/orders/{}/'
+    MAIN_URL = 'http://localhost:8000/{}'
+else:
+    ORDERS_URL = 'http://ec2-54-211-239-148.compute-1.amazonaws.com/orders/{}/'
+    MAIN_URL = 'http://ec2-54-211-239-148.compute-1.amazonaws.com/{}'
 VALID_BANKS = ['BBVA', 'bancolombia', 'pse_bbva']
 VALID_ACCOUNTS_TYPE = ['Ahorros', 'corriente', ""]
 VALID_DOCUMENT_TYPE = ['cc', 'pasaporte', 'cc_ex', ""]

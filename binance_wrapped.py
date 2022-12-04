@@ -1,6 +1,8 @@
 import datetime
 import hashlib
 import hmac
+import json
+import threading
 import time
 from abc import ABC, abstractmethod
 from urllib.parse import urlencode
@@ -8,13 +10,12 @@ from urllib.parse import urlencode
 import pandas as pd
 import requests
 import websocket
-import threading
-import json
-from Errors import OrderAsPaidError
-from constants import API_URL
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
-from orders_wrapped import OrderWrapped
+
+from Errors import OrderAsPaidError
+from constants import API_URL
+from constants import MAPPED_ORDER_KEY
 
 CREDENTIALS_URL = '/sapi/v1/c2c/chat/retrieveChatCredential'
 ORDER_PAID_URL = '/sapi/v1/c2c/orderMatch/markOrderAsPaid'
@@ -207,3 +208,21 @@ class BinanceInfoGetter(ABC):
                 return url.format(file_id)
             except:
                 retry -= 1
+
+    @staticmethod
+    def check_accounts_data(order: dict):
+        print(len(order.keys()), 'keys')
+        print(order.keys())
+        if len(order.keys()) == 10:
+            if order['account'] != order['document_number']:
+                if len(order['account']) == 10 or len(order['account']) == 11:
+                    order['status'] = 'created'
+                else:
+                    order['status'] = 'waiting_for_review'
+        else:
+            order['status'] = 'waiting_for_review'
+            for key in MAPPED_ORDER_KEY.values():
+                if key not in order.keys():
+                    if key != 'is_contact':
+                        order[key] = 1
+        return order

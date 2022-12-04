@@ -31,7 +31,7 @@ class OrderWrapped:
 
     def __login(self):
         url = MAIN_URL.format('api/token/')
-        json_data = {"username": "andres", "password": "andres"}
+        json_data = {"username": "andres", "password": "An5376839$"}
         data = self.__send_request(method="POST", url=url, json_data=json_data, use_auth=False)
         return data.json()
 
@@ -109,3 +109,8 @@ class OrderWrapped:
         url = MAIN_URL.format('get_user/')
         user = self.__send_request(method='GET', url=url).json()
         return user
+
+    def get_order(self, binance_id):
+        url = MAIN_URL.format('api/v1/orders/' + binance_id)
+        data = self.__send_request(method='GET', url=url)
+        return data

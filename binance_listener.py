@@ -1,13 +1,11 @@
-import datetime
-import json
-import os
 
-import requests
-from termcolor import colored
+import json
+
 from colorama import Fore
+from termcolor import colored
 
 from binance_wrapped import BinanceInfoGetter
-from constants import ORDERS_URL, MAPPED_BANKS_FOR_API, MAPPED_ORDER_KEY
+from constants import MAPPED_BANKS_FOR_API, MAPPED_ORDER_KEY
 from utils import mapped_dict_from_data
 
 
@@ -27,8 +25,7 @@ class BinanceListener(BinanceInfoGetter):
         data = json.loads(message)
         binance_id = data['orderNo']
         print(Fore.GREEN + str(self.get_order_info(binance_id=binance_id)['data']))
-        print(type(requests.get(ORDERS_URL.format(binance_id))), '--------')
-        status = requests.get(ORDERS_URL.format(binance_id)).status_code
+        status = self.order_wrapped.get_order(binance_id=binance_id).status_code
         print(Fore.GREEN + str(status))
         if status == 404:
             order = self.get_order_info(binance_id=binance_id)['data']
@@ -54,8 +51,7 @@ class BinanceListener(BinanceInfoGetter):
             acc_dict['account_type'] = order_account_type
             order_data = dict((MAPPED_ORDER_KEY[key], value) for (key, value) in acc_dict.items())
             user = self.order_wrapped.get_user()
-            print(user, '------------------')
-            order_data['status'] = 'waiting_for_review'
+            order_data = self.check_accounts_data(order_data)
             order_data['user'] = user
             self.order_wrapped.create_order(order_data)
             print(Fore.GREEN + "order with id:{} was created".format(binance_id))

@@ -1,11 +1,13 @@
 import datetime
 import json
+import os
 import time
 
 import telebot
 import yaml
 from PIL import Image
 from cryptography.fernet import Fernet
+from django.core.wsgi import get_wsgi_application
 from unidecode import unidecode
 from yaml.loader import SafeLoader
 
@@ -15,9 +17,12 @@ from bank_automation import Bancolombia, Bbva, NequiPseBbva, NequiDavivienda
 from binance_listener import BinanceListener
 from constants import P2P_SCREENSHOT_BOT, CONFIG_PATH, ORDER_STATUS_TO_RUN, AUT_USER, MAPPED_ACCOUNTS, MAPPED_DOCUMENTS, \
     PARTNER_IDS
-from orders.models import Order
 from orders_wrapped import OrderWrapped
 from utils import Dict2Class, left_only_numbers
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+application = get_wsgi_application()
+from orders.models import Order
 
 
 class OrderExecutor:
