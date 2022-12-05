@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 import yaml
 from yaml.loader import SafeLoader
@@ -18,8 +19,12 @@ BANCOLOMBIA_APP_PACKAGE_NAME = 'com.todo1.mobile'
 BBVA_APP_PACKAGE_NAME = 'co.com.bbva.mb'
 KIWI_BROSER = 'com.kiwibrowser.browser'
 NEQUI_PSE_URL = 'https://recarga.nequi.com.co/'
-ORDERS_URL = 'http://localhost:8000/orders/{}/'
-MAIN_URL = 'http://localhost:8000/{}'
+if os.environ['running_mode'] == 'local':
+    ORDERS_URL = 'http://localhost:8000/orders/{}/'
+    MAIN_URL = 'http://localhost:8000/{}'
+else:
+    ORDERS_URL = 'http://ec2-54-211-239-148.compute-1.amazonaws.com/orders/{}/'
+    MAIN_URL = 'http://ec2-54-211-239-148.compute-1.amazonaws.com/{}'
 VALID_BANKS = ['BBVA', 'bancolombia', 'pse_bbva']
 VALID_ACCOUNTS_TYPE = ['Ahorros', 'corriente', ""]
 VALID_DOCUMENT_TYPE = ['cc', 'pasaporte', 'cc_ex', ""]
@@ -73,12 +78,7 @@ MAPPED_ORDER_KEY = {'binance_id': 'binance_id',
                     'account_type': 'account_type',
                     'document_type': 'document_type'}
 NUMBERS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
-KEYS_FOR_CHECK = ['name', 'id_number', 'account_number']
+KEYS_FOR_CHECK = ['name', 'id_number', 'account_number', 'account_type']
 API_HEADERS = {'Accept': '*/*',
                'Accept-Encoding': 'gzip, deflate',
-               'Connection': 'close',
-               'Content-Length': '16',
-               'Content-Type': 'application/json',
-               'Host': 'httpbin.org',
-               'User-Agent': 'python-requests/2.4.3 CPython/3.4.0',
-               'X-Request-Id': 'xx-xx-xx'}
+               'Content-Type': 'application/json'}

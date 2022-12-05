@@ -1,19 +1,20 @@
 import datetime
 import hashlib
 import hmac
+import json
+import threading
 import time
 from abc import ABC, abstractmethod
 from urllib.parse import urlencode
-
 import pandas as pd
 import requests
 import websocket
-import threading
-import json
-from Errors import OrderAsPaidError
-from constants import API_URL
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
+
+from Errors import OrderAsPaidError
+from constants import API_URL
+from constants import MAPPED_ORDER_KEY
 
 CREDENTIALS_URL = '/sapi/v1/c2c/chat/retrieveChatCredential'
 ORDER_PAID_URL = '/sapi/v1/c2c/orderMatch/markOrderAsPaid'
@@ -22,9 +23,10 @@ DRIVE_PARENT_FOLDER = '1T3kw9-qer4o_zhlCOFt4-_gLaxxv8xh7'
 
 
 class BinanceInfoGetter(ABC):
-    def __init__(self, data, name, config):
+    def __init__(self, data, name, config, order_wrapped):
         self.name = name
         self.config = config
+        self.order_wrapped = order_wrapped
         self.__keep_wss = True
         self.__ws = None
         self.__secret_key = data[name]['secret_key']
@@ -205,3 +207,28 @@ class BinanceInfoGetter(ABC):
                 return url.format(file_id)
             except:
                 retry -= 1
+
+    @staticmethod
+    def check_accounts_data(order: dict):
+        order_len = len(order.keys())
+        if order_len >= 10:
+            if order['account'] != order['document_number']:
+                if order_len == 10:
+                    if len(order['account']) == 11:
+                        order['status'] = 'created'
+                    else:
+                        order['status'] = 'waiting_for_review'
+                else:
+                    if len(order['account']) == 10:
+                        order['status'] = 'created'
+                    else:
+                        order['status'] = 'waiting_for_review'
+            else:
+                order['status'] = 'waiting_for_review'
+        else:
+            order['status'] = 'waiting_for_review'
+            for key in MAPPED_ORDER_KEY.values():
+                if key not in order.keys():
+                    if key != 'is_contact':
+                        order[key] = 1
+        return order

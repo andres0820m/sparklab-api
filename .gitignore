@@ -134,7 +134,9 @@ binance.data
 banks_data.data
 bancolombia_data.data
 filekey.key
-
+config.yaml
+data.json
+api.env
 #pycharm
 .idea
 # imgs

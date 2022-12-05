@@ -172,7 +172,8 @@ class Bancolombia:
                  nickname: str,
                  amount: str,
                  binance_id: str,
-                 is_nequi=False
+                 account_type: str,
+                 is_nequi=False,
                  ):
         nickname = str_only_alphanumeric(nickname)
         amount = str_only_numbers(amount)
@@ -199,7 +200,7 @@ class Bancolombia:
             time.sleep(0.3)
             self.__controller.click_on_text('Continuar')
         else:
-            self.__controller.click_on_text('Ahorros')
+            self.__controller.click_on_text(account_type)
             time.sleep(0.5)
             self.__controller.click_on_text('Continuar')
             time.sleep(0.5)
@@ -208,8 +209,14 @@ class Bancolombia:
         self.__controller.click_on_text('Enviar dinero', timeout=15.0)
         time.sleep(7)
         try:
-            self.__controller.wait_for_text('exitosa', 120)
-            self.__controller.save_screen(binance_id)
+            option, _ = self.__controller.wait_for_any_of_this_texts(
+                ['exitosa', 'intentalo mas tarde'],
+                timeout=120
+            )
+            if option == 0:
+                self.__controller.save_screen(binance_id)
+            else:
+                raise TransferNotFinished
         except TimeoutError:
             raise TransferFailAtTheEnd
         try:

@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Bank(models.Model):
@@ -23,6 +24,7 @@ class AccountType(models.Model):
 
 
 class Order(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
     binance_id = models.CharField(primary_key=True, blank=False, null=False, max_length=1000)
     pay_id = models.CharField(max_length=500, blank=False, null=False)
