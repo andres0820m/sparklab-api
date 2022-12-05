@@ -21,14 +21,16 @@ class OrderViewSet(viewsets.ModelViewSet):
 @login_required
 def home(request):
     time_threshold = datetime.datetime.now() - datetime.timedelta(hours=27)
-    orders = Order.objects.filter(date__gt=time_threshold).filter(status__in=['waiting_for_review'])
+    orders = Order.objects.filter(user=request.user).filter(date__gt=time_threshold).filter(
+        status__in=['waiting_for_review'])
     return render(request, "orders_check.html", {"orders": orders})
 
 
 @login_required
 def running_fail(request):
     time_threshold = datetime.datetime.now() - datetime.timedelta(hours=27)
-    orders = Order.objects.filter(date__gt=time_threshold).filter(status__in=['fail', 'running', 'created'])
+    orders = Order.objects.filter(user=request.user).filter(date__gt=time_threshold).filter(
+        status__in=['fail', 'running', 'created'])
     return render(request, "running.html", {"orders": orders})
 
 
