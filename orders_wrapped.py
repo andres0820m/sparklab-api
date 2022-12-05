@@ -31,7 +31,7 @@ class OrderWrapped:
 
     def __login(self):
         url = MAIN_URL.format('api/token/')
-        json_data = {"username": "andres", "password": "An5376839$"}
+        json_data = {"username": os.environ['api_username'], "password": os.environ['api_password']}
         data = self.__send_request(method="POST", url=url, json_data=json_data, use_auth=False)
         return data.json()
 

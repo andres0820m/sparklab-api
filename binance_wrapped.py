@@ -6,7 +6,6 @@ import threading
 import time
 from abc import ABC, abstractmethod
 from urllib.parse import urlencode
-
 import pandas as pd
 import requests
 import websocket
@@ -211,14 +210,21 @@ class BinanceInfoGetter(ABC):
 
     @staticmethod
     def check_accounts_data(order: dict):
-        print(len(order.keys()), 'keys')
-        print(order.keys())
-        if len(order.keys()) == 10:
+        order_len = len(order.keys())
+        if order_len >= 10:
             if order['account'] != order['document_number']:
-                if len(order['account']) == 10 or len(order['account']) == 11:
-                    order['status'] = 'created'
+                if order_len == 10:
+                    if len(order['account']) == 11:
+                        order['status'] = 'created'
+                    else:
+                        order['status'] = 'waiting_for_review'
                 else:
-                    order['status'] = 'waiting_for_review'
+                    if len(order['account']) == 10:
+                        order['status'] = 'created'
+                    else:
+                        order['status'] = 'waiting_for_review'
+            else:
+                order['status'] = 'waiting_for_review'
         else:
             order['status'] = 'waiting_for_review'
             for key in MAPPED_ORDER_KEY.values():

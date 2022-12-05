@@ -1,4 +1,3 @@
-
 import json
 
 from colorama import Fore
@@ -7,6 +6,7 @@ from termcolor import colored
 from binance_wrapped import BinanceInfoGetter
 from constants import MAPPED_BANKS_FOR_API, MAPPED_ORDER_KEY
 from utils import mapped_dict_from_data
+from tools import str_only_alphanumeric, str_only_numbers
 
 
 class BinanceListener(BinanceInfoGetter):
@@ -50,10 +50,16 @@ class BinanceListener(BinanceInfoGetter):
                 order_account_type = self.order_wrapped.get_account(account='Ahorros')
             acc_dict['account_type'] = order_account_type
             order_data = dict((MAPPED_ORDER_KEY[key], value) for (key, value) in acc_dict.items())
+            order_data['document_number'] = str_only_numbers(order_data['document_number'])
+            order_data['account'] = str_only_numbers(order_data['account'])
             user = self.order_wrapped.get_user()
             order_data = self.check_accounts_data(order_data)
             order_data['user'] = user
             self.order_wrapped.create_order(order_data)
+            number_of_orders_ahead = len(self.order_wrapped.get_order())
+            self.send_message(binance_id=binance_id,
+                              message="Hola tenemos {} ordenes adelante, te avisamos apenas lleguemos a la tuya".format(
+                                  str(number_of_orders_ahead)))
             print(Fore.GREEN + "order with id:{} was created".format(binance_id))
 
     def wws_on_error(self, ws, error):

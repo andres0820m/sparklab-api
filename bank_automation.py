@@ -172,7 +172,8 @@ class Bancolombia:
                  nickname: str,
                  amount: str,
                  binance_id: str,
-                 is_nequi=False
+                 account_type: str,
+                 is_nequi=False,
                  ):
         nickname = str_only_alphanumeric(nickname)
         amount = str_only_numbers(amount)
@@ -199,7 +200,7 @@ class Bancolombia:
             time.sleep(0.3)
             self.__controller.click_on_text('Continuar')
         else:
-            self.__controller.click_on_text('Ahorros')
+            self.__controller.click_on_text(account_type)
             time.sleep(0.5)
             self.__controller.click_on_text('Continuar')
             time.sleep(0.5)
