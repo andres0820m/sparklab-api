@@ -104,7 +104,7 @@ class OrderExecutor:
                                                                message=self.config.process_payment_message)
                                     self.__bancolombia.transfer(nickname=order.account, amount=order.amount,
                                                                 binance_id=order.binance_id, is_nequi=order.is_contact,
-                                                                account_type=order.account_type)
+                                                                account_type=order.account_type.account_type)
                                 if order.bank.bank == 'BBVA':
                                     self.__bbva.login(fingerprint=self.config.bbva_fingerprint)
                                     self.__bbva.transfer(amount=order.amount, is_contact=order.is_contact,
