@@ -141,3 +141,4 @@ api.env
 .idea
 # imgs
 imgs/
+tessdata/
