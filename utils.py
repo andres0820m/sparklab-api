@@ -54,3 +54,7 @@ def mapped_dict_from_data(acc_dict, data, bank):
         acc_dict.pop('bank_name')
     except KeyError:
         pass
+    try:
+        acc_dict.pop('user')
+    except KeyError:
+        pass

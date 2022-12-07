@@ -71,7 +71,7 @@ class AndroidController:
         # ZT322CVCLS ZY32FSWLMG
         if len(devices) == 0:
             raise NotDevicesConnected
-        self.__device: Device = self.get_device(devices=devices, serial='ZY32FSWLMG')
+        self.__device: Device = self.get_device(devices=devices, serial='')
 
         self.__get_templates()
         self.__take_screenshot()

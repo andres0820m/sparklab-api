@@ -15,6 +15,7 @@ from pydrive.drive import GoogleDrive
 from Errors import OrderAsPaidError
 from constants import API_URL
 from telegram_wrapped import TelegramBot
+from tools import str_only_alphanumeric, str_only_numbers
 
 CREDENTIALS_URL = '/sapi/v1/c2c/chat/retrieveChatCredential'
 ORDER_PAID_URL = '/sapi/v1/c2c/orderMatch/markOrderAsPaid'
@@ -211,24 +212,23 @@ class BinanceInfoGetter(ABC):
 
     @staticmethod
     def check_accounts_data(order: dict):
-        order_len = len(order.keys())
-        if order_len >= 10:
-            if order['account'] != order['document_number']:
-                if order_len == 10:
-                    if len(order['account']) == 11:
-                        order['status'] = 'created'
-                    else:
-                        order['status'] = 'waiting_for_review'
+        is_contact = order['is_contact']
+        bank_data = str_only_numbers(order['account'])
+        print("lennnnnnnnnn ", len(bank_data))
+        if order['account'] != order['document_number']:
+            if not is_contact:
+                if len(str(bank_data)) == 11:
+                    order['status'] = 'created'
                 else:
-                    if len(order['account']) == 10:
-                        order['status'] = 'created'
-                    else:
-                        order['status'] = 'waiting_for_review'
+                    order['status'] = 'waiting_for_review'
             else:
-                order['status'] = 'waiting_for_review'
+                if len(str(bank_data)) == 10:
+                    order['status'] = 'created'
+                else:
+                    order['status'] = 'waiting_for_review'
         else:
             order['status'] = 'waiting_for_review'
-            for key in order:
-                if order[key] == '**********':
-                    order['status'] = 'waiting_for_review'
+        for key in order:
+            if order[key] == '**********' and key not in ['user', ]:
+                order['status'] = 'waiting_for_review'
         return order

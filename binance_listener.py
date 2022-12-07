@@ -50,13 +50,14 @@ class BinanceListener(BinanceInfoGetter):
             acc_dict['account_type'] = order_account_type
             order_data = dict((MAPPED_ORDER_KEY[key], value) for (key, value) in acc_dict.items())
             user = self.order_wrapped.get_user()
-            order_data = self.check_accounts_data(order_data)
             order_data['user'] = user
+            order_data = self.check_accounts_data(order_data)
+            print(order_data)
             response = self.order_wrapped.create_order(order_data)
             print(response.status_code, '-------------------------------1')
             if response.status_code > 201:
                 self.telegram_bot.send_message(chat_id=AUT_USER,
-                                               text="order {} could not be created !!".format(order['binance_id']))
+                                               text="order {} could not be created !!".format(order_data['binance_id']))
             else:
                 if order_data['status'] == 'created':
                     self.telegram_bot.send_message(chat_id=AUT_USER,
