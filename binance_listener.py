@@ -53,17 +53,18 @@ class BinanceListener(BinanceInfoGetter):
             order_data = self.check_accounts_data(order_data)
             order_data['user'] = user
             response = self.order_wrapped.create_order(order_data)
-            if response.status > 201:
+            print(response.status_code, '-------------------------------1')
+            if response.status_code > 201:
                 self.telegram_bot.send_message(chat_id=AUT_USER,
                                                text="order {} could not be created !!".format(order['binance_id']))
             else:
-                if order['status'] == 'created':
+                if order_data['status'] == 'created':
                     self.telegram_bot.send_message(chat_id=AUT_USER,
-                                                   text="order {} is running :3".format(order['binance_id']))
+                                                   text="order {} is running :3".format(order_data['binance_id']))
                 else:
                     self.telegram_bot.send_message(chat_id=AUT_USER,
                                                    text='the order {} was created but need revision'.format(
-                                                       order['binance_id']))
+                                                       order_data['binance_id']))
             print(Fore.GREEN + "order with id:{} was created".format(binance_id))
 
     def wws_on_error(self, ws, error):

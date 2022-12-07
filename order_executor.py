@@ -131,8 +131,12 @@ class OrderExecutor:
                                 self.listener.send_message(binance_id=order.binance_id,
                                                            message=self.config.thanks_message)
 
+                                if self.config.fix_price:
+                                    usdt_price = str(float(order.usdt_price) + 22)
+                                else:
+                                    usdt_price = order.usdt_price
                                 message = "Se acaban de comprar {} pesos colombianos, a un precio de {}".format(
-                                    order.amount, order.usdt_price)
+                                    order.amount, usdt_price)
                                 for partner in PARTNER_IDS:
                                     self.__telegram_bot.send_message(chat_id=partner, text=message)
 
