@@ -103,7 +103,8 @@ class OrderWrapped:
         print(order)
         url = MAIN_URL.format('api/v1/orders/')
         print(url)
-        print(self.__send_request(method='POST', url=url, json_data=order))
+        response = self.__send_request(method='POST', url=url, json_data=order)
+        return response
 
     def get_user(self):
         url = MAIN_URL.format('get_user/')
