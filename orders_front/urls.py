@@ -20,6 +20,7 @@ urlpatterns = [
     path('running/', running_fail),
     path('save_edit/', save_order),
     path('running/save_edit_running/', save_order_running),
+    path('save_edit_running/', save_order_running),
     path('status/edit_order/<binance_id>', edit_order),
     path('status/approve_order/<binance_id>', approve_order),
     path('status/delete_order/<binance_id>', delete_order),

@@ -4,7 +4,7 @@ from colorama import Fore
 from termcolor import colored
 
 from binance_wrapped import BinanceInfoGetter
-from constants import MAPPED_BANKS_FOR_API, MAPPED_ORDER_KEY
+from constants import MAPPED_BANKS_FOR_API, MAPPED_ORDER_KEY, ORDER_TEMPLATE
 from utils import mapped_dict_from_data
 from tools import str_only_alphanumeric, str_only_numbers
 
@@ -29,7 +29,7 @@ class BinanceListener(BinanceInfoGetter):
         print(Fore.GREEN + str(status))
         if status == 404:
             order = self.get_order_info(binance_id=binance_id)['data']
-            acc_dict = dict()
+            acc_dict = ORDER_TEMPLATE.copy()
             acc_dict['binance_id'] = str(order['orderNumber'])
             bank = MAPPED_BANKS_FOR_API[order['payType']]
             order_bank = self.order_wrapped.get_bank(bank='bancolombia')

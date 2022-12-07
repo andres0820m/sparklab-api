@@ -36,16 +36,6 @@ P2P_DASHBOARD_BOT = config.P2P_DASHBOARD_BOT
 API_URL = 'https://api.binance.com'
 INTERNAL_ORDERS_LINK = "http://localhost:8000/admin/orders/order/{}/change/"
 ORDER_STATUS_TO_RUN = ['created', 'fail', 'running']
-ORDER_TEMPLATE = '''{"bank": "",
-"amount": "",
-"is_contact": "",
-"account": "",
-"name": "",
-"binance_id": "",
-"document_type": "",
-"account_type": "",
-"document_number": ""}
-'''
 DELETE_COMMAND = "--longpress $(printf 'KEYCODE_DEL %.0s' {1..250})"
 
 
@@ -82,3 +72,15 @@ KEYS_FOR_CHECK = ['name', 'id_number', 'account_number', 'account_type']
 API_HEADERS = {'Accept': '*/*',
                'Accept-Encoding': 'gzip, deflate',
                'Content-Type': 'application/json'}
+ORDER_TEMPLATE = {'binance_id': '**********',
+                  'bank': 1,
+                  'amount': '**********',
+                  'usdt_price': '**********',
+                  'is_contact': False,
+                  'pay_id': '**********',
+                  'name': '**********',
+                  'account': '**********',
+                  'document_number': '**********',
+                  'account_type': 1,
+                  'document_type': 1,
+                  'user': '**********'}

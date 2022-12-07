@@ -50,7 +50,16 @@ class ImgTemplate:
 
 class AndroidController:
 
-    def __init__(self, dark_mode=False):
+    @staticmethod
+    def get_device(devices: list[Device], serial=''):
+        if len(devices) == 1:
+            return devices[0]
+        else:
+            for device in devices:
+                if device.get_serial_no() == serial:
+                    return device
+
+    def __init__(self, serial=None, dark_mode=False):
         self.__templates: dict[ImgTemplate] = {}
 
         self.__dark_mode = dark_mode
@@ -58,9 +67,11 @@ class AndroidController:
         self.__adb = Client()
 
         devices = self.__adb.devices()
+        print(devices[0].get_serial_no())
+        # ZT322CVCLS ZY32FSWLMG
         if len(devices) == 0:
             raise NotDevicesConnected
-        self.__device: Device = devices[0]
+        self.__device: Device = self.get_device(devices=devices, serial='ZY32FSWLMG')
 
         self.__get_templates()
         self.__take_screenshot()

@@ -48,10 +48,8 @@ def mapped_dict_from_data(acc_dict, data, bank):
     account_data = {k.lower().replace(" ", "_"): v for k, v in account_data.items()}
     acc_keys = account_data.keys()
     for key in acc_keys:
-        if key not in KEYS_FOR_CHECK or not account_data[key]:
-            acc_dict[key] = '-'
-        else:
-            acc_dict[key] = account_data[key]
+        acc_dict[key] = account_data[key]
+
     try:
         acc_dict.pop('bank_name')
     except KeyError:

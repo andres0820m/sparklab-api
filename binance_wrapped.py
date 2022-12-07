@@ -227,8 +227,7 @@ class BinanceInfoGetter(ABC):
                 order['status'] = 'waiting_for_review'
         else:
             order['status'] = 'waiting_for_review'
-            for key in MAPPED_ORDER_KEY.values():
-                if key not in order.keys():
-                    if key != 'is_contact':
-                        order[key] = 1
+            for key in order:
+                if order[key] == '**********':
+                    order['status'] = 'waiting_for_review'
         return order

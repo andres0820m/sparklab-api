@@ -3,7 +3,7 @@ import json
 import os
 import time
 
-import telebot
+from telegram_wrapped import TelegramBot
 import yaml
 from PIL import Image
 from cryptography.fernet import Fernet
@@ -15,7 +15,7 @@ from Errors import *
 from android_controller import AndroidController
 from bank_automation import Bancolombia, Bbva, NequiPseBbva, NequiDavivienda
 from binance_listener import BinanceListener
-from constants import P2P_SCREENSHOT_BOT, CONFIG_PATH, ORDER_STATUS_TO_RUN, AUT_USER, MAPPED_ACCOUNTS, MAPPED_DOCUMENTS, \
+from constants import CONFIG_PATH, ORDER_STATUS_TO_RUN, AUT_USER, MAPPED_ACCOUNTS, MAPPED_DOCUMENTS, \
     PARTNER_IDS
 from orders_wrapped import OrderWrapped
 from utils import Dict2Class, left_only_numbers
@@ -30,7 +30,7 @@ class OrderExecutor:
         with open(CONFIG_PATH) as f:
             self.config = Dict2Class(yaml.load(f, Loader=SafeLoader))
         self.android_controller = AndroidController(dark_mode=dark_mode)
-        self.__telegram_bot = telebot.TeleBot(P2P_SCREENSHOT_BOT)
+        self.__telegram_bot = TelegramBot()
         self.listener = listener
         self.order_wrapped = OrderWrapped()
         self.__bancolombia = Bancolombia(android_controller=self.android_controller, ec_path=ec_path)
@@ -130,18 +130,16 @@ class OrderExecutor:
                                 time.sleep(0.4)
                                 self.listener.send_message(binance_id=order.binance_id,
                                                            message=self.config.thanks_message)
-                                try:
-                                    message = "Se acaban de comprar {} pesos colombianos, a un precio de {}".format(
-                                        order.amount, order.usdt_price)
-                                    for partner in PARTNER_IDS:
-                                        try:
-                                            self.__telegram_bot.send_message(chat_id=partner, text=message)
-                                        except:
-                                            pass
 
-                                    self.__telegram_bot.send_photo(chat_id=AUT_USER, photo=img,
-                                                                   caption='order: {}'.format(order.binance_id))
-                                except:
+                                message = "Se acaban de comprar {} pesos colombianos, a un precio de {}".format(
+                                    order.amount, order.usdt_price)
+                                for partner in PARTNER_IDS:
+                                    self.__telegram_bot.send_message(chat_id=partner, text=message)
+
+                                send_img_status = self.__telegram_bot.send_photo(chat_id=AUT_USER, img=img,
+                                                                                 caption='order: {}'.format(
+                                                                                     order.binance_id))
+                                if not send_img_status:
                                     self.__telegram_bot.send_message(chat_id=AUT_USER,
                                                                      text="la imagen de la orden {} no pudo ser envia, buscar captura en la carpte de imagenes del pc".format(
                                                                          order.binance_id))
@@ -166,7 +164,6 @@ class OrderExecutor:
                                                              text="la orden {}, fallo pero se inscrbio la cuenta, borrar y volver a intentar".format(
                                                                  order.binance_id))
 
-
                         except TransferFailAtTheEnd:
                             order.fail_retry = 3
                             order.status = 'fail'
@@ -181,12 +178,10 @@ class OrderExecutor:
                         except (BancolombiaError, NequiAccountError):
                             order.status = 'waiting_for_review'
                             self.order_wrapped.update_order(order)
-                            try:
-                                self.__telegram_bot.send_message(chat_id=AUT_USER,
-                                                                 text="the order {} have wrong account data !!".format(
-                                                                     order.binance_id))
-                            except:
-                                pass
+
+                            self.__telegram_bot.send_message(chat_id=AUT_USER,
+                                                             text="the order {} have wrong account data !!".format(
+                                                                 order.binance_id))
 
                         except (GettingTokenError, ContinueForTokenError, TimeoutError, TransferNotFinished):
                             print("Trasaction fails !!")
@@ -199,7 +194,7 @@ class OrderExecutor:
                 time.sleep(1)
             except ApiConnectionError:
                 print("API is not working !!!")
-                self.__telegram_bot.send_message(AUT_USER, text="Can't connect to the server !!!!")
+                self.__telegram_bot.send_message(chat_id=AUT_USER, text="Can't connect to the server !!!!")
                 time.sleep(10)
 
 
