@@ -66,7 +66,8 @@ MAPPED_ORDER_KEY = {'binance_id': 'binance_id',
                     'account_number': 'account',
                     'id_number': 'document_number',
                     'account_type': 'account_type',
-                    'document_type': 'document_type'}
+                    'document_type': 'document_type',
+                    'user': 'user'}
 NUMBERS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
 KEYS_FOR_CHECK = ['name', 'id_number', 'account_number', 'account_type']
 API_HEADERS = {'Accept': '*/*',
@@ -79,8 +80,8 @@ ORDER_TEMPLATE = {'binance_id': '**********',
                   'is_contact': False,
                   'pay_id': '**********',
                   'name': '**********',
-                  'account': '**********',
-                  'document_number': '**********',
+                  'account_number': '**********',
+                  'id_number': '**********',
                   'account_type': 1,
                   'document_type': 1,
                   'user': '**********'}
