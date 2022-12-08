@@ -213,7 +213,7 @@ class BinanceInfoGetter(ABC):
     @staticmethod
     def check_accounts_data(order: dict):
         is_contact = order['is_contact']
-        bank_data = str_only_numbers(order['account'])
+        bank_data = order['account']
         print("lennnnnnnnnn ", len(bank_data))
         if order['account'] != order['document_number']:
             if not is_contact:

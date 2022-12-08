@@ -1,6 +1,6 @@
 import os
 import requests
-from requests.exceptions import ConnectTimeout, ConnectionError
+from requests.exceptions import ConnectTimeout, ConnectionError, ReadTimeout
 
 from django.forms.models import model_to_dict
 from django.core.wsgi import get_wsgi_application
@@ -49,7 +49,7 @@ class OrderWrapped:
                     else:
                         continue_request = True
                 return data
-            except (ConnectTimeout, ConnectionError):
+            except (ConnectTimeout, ConnectionError, ReadTimeout):
                 retry -= 1
         raise ApiConnectionError
 

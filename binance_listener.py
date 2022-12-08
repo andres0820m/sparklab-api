@@ -6,6 +6,7 @@ from termcolor import colored
 from binance_wrapped import BinanceInfoGetter
 from constants import MAPPED_BANKS_FOR_API, MAPPED_ORDER_KEY, ORDER_TEMPLATE, AUT_USER
 from utils import mapped_dict_from_data
+from tools import str_only_numbers
 
 
 class BinanceListener(BinanceInfoGetter):
@@ -48,6 +49,8 @@ class BinanceListener(BinanceInfoGetter):
             except:
                 order_account_type = self.order_wrapped.get_account(account='Ahorros')
             acc_dict['account_type'] = order_account_type
+            acc_dict['id_number'] = str_only_numbers(acc_dict['id_number'])
+            acc_dict['account_number'] = str_only_numbers(acc_dict['account_number'])
             order_data = dict((MAPPED_ORDER_KEY[key], value) for (key, value) in acc_dict.items())
             user = self.order_wrapped.get_user()
             order_data['user'] = user
