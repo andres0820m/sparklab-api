@@ -209,7 +209,7 @@ with open('binance.data', 'rb') as enc_file:
     data = json.loads(decrypted.decode("utf-8"))
     with open(CONFIG_PATH) as f:
         config = Dict2Class(yaml.load(f, Loader=SafeLoader))
-    listener = BinanceListener(data=data, name='andres', config=config, order_wrapped=OrderWrapped())
+    listener = BinanceListener(data=data, name=config.user_name, config=config, order_wrapped=OrderWrapped())
 listener.join_wss_stream()
 time.sleep(3)
 executor = OrderExecutor(ec_path='banks_data.data', listener=listener)
