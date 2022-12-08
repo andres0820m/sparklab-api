@@ -24,7 +24,6 @@ class BinanceListener(BinanceInfoGetter):
     def wws_on_message(self, ws, message):
         data = json.loads(message)
         binance_id = data['orderNo']
-        print(Fore.GREEN + str(self.get_order_info(binance_id=binance_id)['data']))
         status = self.order_wrapped.get_order(binance_id=binance_id).status_code
         print(Fore.GREEN + str(status))
         if status == 404:
@@ -49,15 +48,11 @@ class BinanceListener(BinanceInfoGetter):
             except:
                 order_account_type = self.order_wrapped.get_account(account='Ahorros')
             acc_dict['account_type'] = order_account_type
-            acc_dict['id_number'] = str_only_numbers(acc_dict['id_number'])
-            acc_dict['account_number'] = str_only_numbers(acc_dict['account_number'])
             order_data = dict((MAPPED_ORDER_KEY[key], value) for (key, value) in acc_dict.items())
             user = self.order_wrapped.get_user()
             order_data['user'] = user
             order_data = self.check_accounts_data(order_data)
-            print(order_data)
             response = self.order_wrapped.create_order(order_data)
-            print(response.status_code, '-------------------------------1')
             if response.status_code > 201:
                 self.telegram_bot.send_message(chat_id=AUT_USER,
                                                text="order {} could not be created !!".format(order_data['binance_id']))

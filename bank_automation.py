@@ -1,5 +1,5 @@
 import time
-
+import re
 from enum import Enum
 import secrets
 from android_controller import AndroidController
@@ -176,6 +176,8 @@ class Bancolombia:
                  is_nequi=False,
                  ):
         nickname = str_only_alphanumeric(nickname)
+        amount = re.sub(',', '', amount)
+        amount = str(int(float(amount)))
         amount = str_only_numbers(amount)
         self.__controller.click_on_text('Inicio', delay=1.0, timeout=10)
         self.__controller.click_on_text('Transacciones', min_y=0.7)
