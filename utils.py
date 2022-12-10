@@ -41,10 +41,13 @@ def mapped_dict_from_data(acc_dict, data, bank):
     if bank == 'Nequi':
         acc_dict['is_contact'] = True
     for acc_data in data:
-        if acc_data['fieldName'] == 'Full name of receiver':
-            account_data['name'] = acc_data['fieldValue']
-        else:
-            account_data[acc_data['fieldName']] = acc_data['fieldValue']
+        try:
+            if acc_data['fieldName'] == 'Full name of receiver':
+                account_data['name'] = acc_data['fieldValue']
+            else:
+                account_data[acc_data['fieldName']] = acc_data['fieldValue']
+        except KeyError:
+            pass
     account_data = {k.lower().replace(" ", "_"): v for k, v in account_data.items()}
     acc_keys = account_data.keys()
     for key in acc_keys:
