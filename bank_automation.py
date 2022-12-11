@@ -127,15 +127,11 @@ class Bancolombia:
                 self.__controller.input_keyevent(keycodes.KEYCODE_DPAD_DOWN)
                 time.sleep(0.3)
             self.__controller.input_text("nequi")
-            time.sleep(1)
-            self.__controller.click_on_text("nequi", idx=1)
+            time.sleep(0.5)
+            self.__controller.click_coordinate((156, 590))
         else:
             self.__controller.click_on_text('Bancolombia')
-        try:
-            self.__controller.click_on_text(account_text)
-        except:
-            self.__controller.click_on_text("nequi", idx=0)
-            self.__controller.click_on_text(account_text)
+        self.__controller.click_on_text(account_text)
         self.__controller.input_text(num_account)
         self.__controller.input_keyevent(keycodes.KEYCODE_TAB)
         if not is_nequi:
@@ -144,7 +140,7 @@ class Bancolombia:
             else:
                 self.__controller.click_on_text('Corriente')
         self.__controller.click_on_text('Ingresa nombre personalizado')
-        time.sleep(1)
+        time.sleep(0.1)
         self.__controller.input_text(nickname)
         self.__controller.click_on_text('Continuar')
         try:
