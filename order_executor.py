@@ -188,7 +188,7 @@ class OrderExecutor:
                                                              text="the order {} have wrong account data !!".format(
                                                                  order.binance_id))
 
-                        except (GettingTokenError, ContinueForTokenError, TimeoutError, TransferNotFinished):
+                        except (GettingTokenError, ContinueForTokenError, TimeoutError, TransferNotFinished, IndexError):
                             self.__bancolombia.change_last_login()
                             print("Trasaction fails !!")
                             order.status = 'fail'
