@@ -114,11 +114,8 @@ class Bancolombia:
         self.__controller.click_on_text('Inicio')
         self.__controller.click_on_text('Transacciones', idx=1)
         self.__controller.click_on_text('Inscribir cuentas')
-        try:
-            self.__controller.wait_for_text('Selecciona el banco', timeout=15, use_canny=True, max_y=0.3)
-        except TimeoutError:
-            raise TimeoutError
-        self.__controller.click_on_text('Selecciona el banco', timeout=5.0, use_canny=True, max_y=0.3)
+        self.__controller.wait_for_text('datos del producto', timeout=10)
+        self.__controller.click_coordinate((242, 350))
         self.__controller.wait_for_text('Bancolombia', timeout=15, use_canny=True)
         account_text = "Ingresa el numero del producto"
         if is_nequi:
