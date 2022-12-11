@@ -84,4 +84,11 @@ ORDER_TEMPLATE = {'binance_id': '**********',
                   'account_type': 1,
                   'document_type': 1}
 YAHOO_TRM_PRICE_URL = 'https://query1.finance.yahoo.com/v8/finance/chart/COP=X?region=US&lang=en-US&includePrePost=false&interval=2m&useYfid=true&range=1d&corsDomain=finance.yahoo.com&.tsrc=finance'
-
+HTML_HEADERS = {
+    "Accept": "*/*",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "en-US,en;q=0.9,es;q=0.8",
+    "content-type": "application/json",
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) "
+                  "Chrome/103.0.0.0 Safari/537.36 "
+}
