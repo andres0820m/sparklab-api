@@ -2,6 +2,7 @@ import time
 import re
 from enum import Enum
 import secrets
+from datetime import datetime
 from android_controller import AndroidController
 from android_controller import ElementNotFound
 from android_controller import keycodes as keycodes
@@ -19,6 +20,7 @@ class Bancolombia:
     def __init__(self, android_controller: AndroidController, ec_path: str, verbose=True, ):
         self.__controller = android_controller
         self.__verbose = verbose
+        self.__last_login = None
         self.bank_data = read_file(ec_path)['bancolombia']
 
     def __print(self, text):
@@ -32,6 +34,9 @@ class Bancolombia:
     def __open_app(self):
         self.__controller.start_app(BANCOLOMBIA_APP_PACKAGE_NAME)
         time.sleep(0.5)
+
+    def change_last_login(self):
+        self.__last_login = None
 
     def check_transfer_error(self, check_text, retry=30, click_on_continue=False):
         while retry != 0:
@@ -48,32 +53,47 @@ class Bancolombia:
             retry -= 1
 
     def login(self, fingerprint=False):
-        self.__close_app()
-        self.__open_app()
-        self.__print('Esperando que la aplicacion se inicie...')
-        time.sleep(2)
-        self.__controller.click_on_text('iniciar sesion', max_y=0.4, use_canny=True, timeout=20.0)
-        if fingerprint:
-            self.__controller.click_on_text('CANCELAR', timeout=20.0)
-        self.__print('Ingresando usuario...')
-        self.__controller.click_on_text('Ingresa el usuario', timeout=5.0)
-        self.__controller.input_text(self.bank_data['user_name'])
-        self.__controller.input_keyevent(keycodes.KEYCODE_ENTER)
-        time.sleep(3)
-        self.__controller.click_on_text('CONTINUAR', timeout=5.0)
-        self.__print('Ingresando contrasena')
-        self.__controller.wait_for_text("ingresa la clave", timeout=40)
-        self.__controller.input_text(self.bank_data['password'])
-        time.sleep(1)
-        self.__controller.input_keyevent(keycodes.KEYCODE_ENTER)
-        self.__controller.click_on_text('CONTINUAR', timeout=15)
-
-        self.__print('Esperando pantalla de bienvenida')
+        check = True
         try:
-            self.__controller.wait_for_text('Hola {}'.format(self.bank_data['welcome_name']), timeout=40)
-        except TimeoutError:
-            raise TimeoutError('Nunca aparecio la pantalla de bienvenida')
-        self.__print('Sesion iniciada')
+            if (datetime.now() - self.__last_login).seconds < 150:
+                check = False
+        except TypeError:
+            check = True
+        if check:
+            self.__close_app()
+            self.__open_app()
+            self.__print('Esperando que la aplicacion se inicie...')
+            time.sleep(2)
+            login_retry = 3
+            while login_retry != 0:
+                try:
+                    self.__controller.click_on_text('iniciar sesion', max_y=0.4, use_canny=True, timeout=20.0)
+                    if fingerprint:
+                        self.__controller.click_on_text('CANCELAR', timeout=8)
+                        login_retry = 0
+                except TimeoutError:
+                    login_retry -= 1
+                    self.__controller.click_on_text('intentalo mas tarde', timeout=10)
+            self.__print('Ingresando usuario...')
+            self.__controller.click_on_text('Ingresa el usuario', timeout=5.0)
+            self.__controller.input_text(self.bank_data['user_name'])
+            self.__controller.input_keyevent(keycodes.KEYCODE_ENTER)
+            time.sleep(3)
+            self.__controller.click_on_text('CONTINUAR', timeout=5.0)
+            self.__print('Ingresando contrasena')
+            self.__controller.wait_for_text("ingresa la clave", timeout=40)
+            self.__controller.input_text(self.bank_data['password'])
+            time.sleep(1)
+            self.__controller.input_keyevent(keycodes.KEYCODE_ENTER)
+            self.__controller.click_on_text('CONTINUAR', timeout=15)
+
+            self.__print('Esperando pantalla de bienvenida')
+            try:
+                self.__controller.wait_for_text('Hola {}'.format(self.bank_data['welcome_name']), timeout=40)
+            except TimeoutError:
+                raise TimeoutError('Nunca aparecio la pantalla de bienvenida')
+            self.__print('Sesion iniciada')
+        self.__last_login = datetime.now()
 
     def enroll_account(self,
                        num_account: str,
@@ -92,17 +112,14 @@ class Bancolombia:
         self.__print(f'  Account number: {id_type}')
         self.__print(f'  Account number: {id_number}')
         self.__controller.click_on_text('Inicio')
-        time.sleep(0.5)
         self.__controller.click_on_text('Transacciones', idx=1)
-        time.sleep(0.5)
         self.__controller.click_on_text('Inscribir cuentas')
-        time.sleep(0.5)
         try:
-            self.__controller.wait_for_text('Selecciona el banco', timeout=15)
+            self.__controller.wait_for_text('Selecciona el banco', timeout=15, use_canny=True, max_y=0.3)
         except TimeoutError:
             raise TimeoutError
-        time.sleep(0.5)
-        self.__controller.click_on_text('Selecciona el banco', timeout=5.0)
+        self.__controller.click_on_text('Selecciona el banco', timeout=5.0, use_canny=True, max_y=0.3)
+        self.__controller.wait_for_text('Bancolombia', timeout=15, use_canny=True)
         account_text = "Ingresa el numero del producto"
         if is_nequi:
             account_text = 'Ingresa el numero'
@@ -121,7 +138,6 @@ class Bancolombia:
             self.__controller.click_on_text(account_text)
         self.__controller.input_text(num_account)
         self.__controller.input_keyevent(keycodes.KEYCODE_TAB)
-        time.sleep(2.0)
         if not is_nequi:
             if acc_type == AccountType.AHORROS:
                 self.__controller.click_on_text('Ahorros')
@@ -164,9 +180,17 @@ class Bancolombia:
             self.__controller.click_on_text('Inicio', timeout=10.0)
             raise AlreadyEnrolledAccount
         elif option == 2:
+            self.__controller.click_on_text('cancelar', timeout=15)
+            time.sleep(0.5)
+            for _ in range(2):
+                self.__controller.input_keyevent(keycodes.KEYCODE_TAB)
+                time.sleep(0.1)
+            self.__controller.input_keyevent(keycodes.KEYCODE_ENTER)
             raise BancolombiaError
         elif option == 3:
+            self.__controller.click_on_text('intentalo mas tarde', timeout=10)
             raise NequiAccountError
+        self.__last_login = datetime.now()
 
     def transfer(self,
                  nickname: str,
@@ -228,6 +252,7 @@ class Bancolombia:
 
         except TimeoutError:
             raise TransferNotFinished
+        self.__last_login = datetime.now()
 
 
 class Bbva:
