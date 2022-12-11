@@ -83,3 +83,5 @@ ORDER_TEMPLATE = {'binance_id': '**********',
                   'id_number': '**********',
                   'account_type': 1,
                   'document_type': 1}
+YAHOO_TRM_PRICE_URL = 'https://query1.finance.yahoo.com/v8/finance/chart/COP=X?region=US&lang=en-US&includePrePost=false&interval=2m&useYfid=true&range=1d&corsDomain=finance.yahoo.com&.tsrc=finance'
+
