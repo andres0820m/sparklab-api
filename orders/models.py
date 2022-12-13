@@ -43,3 +43,9 @@ class Order(models.Model):
 
     def __str__(self):
         return " {} -- {}".format(self.binance_id, self.status)
+
+
+class Abs(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_active = models.BooleanField()
+
