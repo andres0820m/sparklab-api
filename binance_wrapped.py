@@ -11,11 +11,12 @@ import requests
 import websocket
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
-
+from constants import HTML_HEADERS, YAHOO_TRM_PRICE_URL
 from Errors import OrderAsPaidError
 from constants import API_URL
 from telegram_wrapped import TelegramBot
-from tools import str_only_alphanumeric, str_only_numbers
+from tools import str_only_numbers
+from utils import send_request
 
 CREDENTIALS_URL = '/sapi/v1/c2c/chat/retrieveChatCredential'
 ORDER_PAID_URL = '/sapi/v1/c2c/orderMatch/markOrderAsPaid'
@@ -80,22 +81,27 @@ class BinanceInfoGetter(ABC):
         }.get(http_method, 'GET')
 
     def send_signed_request(self, http_method, url_path, payload={}, data=None):
-        query_string = urlencode(payload)
-        # replace single quote to double quote
-        query_string = query_string.replace('%27', '%22')
-        if query_string:
-            query_string = "{}&timestamp={}".format(query_string, self.__get_timestamp())
-        else:
-            query_string = 'timestamp={}'.format(self.__get_timestamp())
+        retry = 3
+        while retry != 0:
+            query_string = urlencode(payload)
+            # replace single quote to double quote
+            query_string = query_string.replace('%27', '%22')
+            if query_string:
+                query_string = "{}&timestamp={}".format(query_string, self.__get_timestamp())
+            else:
+                query_string = 'timestamp={}'.format(self.__get_timestamp())
 
-        url = API_URL + url_path + '?' + query_string + '&signature=' + self.__hashing(query_string)
-        print(url)
-        if data:
-            params = {'url': url, 'params': {}, 'json': data}
-        else:
-            params = {'url': url, 'params': {}}
-        response = self.__dispatch_request(http_method)(**params)
-        return response.json()
+            url = API_URL + url_path + '?' + query_string + '&signature=' + self.__hashing(query_string)
+            print(url)
+            if data:
+                params = {'url': url, 'params': {}, 'json': data}
+            else:
+                params = {'url': url, 'params': {}}
+            response = self.__dispatch_request(http_method)(**params)
+            if response.status_code >= 201:
+                retry -= 1
+            else:
+                return response.json()
 
     # used for sending public data request
     def send_public_request(self, url_path, payload={}):
@@ -231,3 +237,8 @@ class BinanceInfoGetter(ABC):
             if order[key] == '**********' and key not in ['user', ]:
                 order['status'] = 'waiting_for_review'
         return order
+
+    @staticmethod
+    def get_yahoo_data():
+        data = send_request(method='GET', headers=HTML_HEADERS, url=YAHOO_TRM_PRICE_URL)
+        return data

@@ -1,6 +1,8 @@
 import yaml
+import requests
 from yaml.loader import SafeLoader
 from constants import VALID_BANKS, VALID_ACCOUNTS_TYPE, VALID_DOCUMENT_TYPE, CONFIG_PATH, NUMBERS, KEYS_FOR_CHECK
+from requests.exceptions import ConnectTimeout, ConnectionError, ReadTimeout
 
 with open(CONFIG_PATH) as f:
     config = yaml.load(f, Loader=SafeLoader)
@@ -61,3 +63,13 @@ def mapped_dict_from_data(acc_dict, data, bank):
         acc_dict.pop('user')
     except KeyError:
         pass
+
+
+def send_request(method, url, headers={}, params={}, json_data={}, retry=3, timeout=5):
+    while retry != 0:
+        try:
+            data = requests.request(method=method, url=url, timeout=timeout, json=json_data, params=params,
+                                    headers=headers)
+            return data
+        except (ConnectTimeout, ConnectionError, ReadTimeout):
+            retry -= 1

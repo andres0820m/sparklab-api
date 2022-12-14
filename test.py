@@ -85,3 +85,6 @@ test_model = BinanceListener2()
 order_data = listener.get_order_info('20434209045636300800')['data']
 
 test_model.wws_on_message(order_data)
+
+data = listener.get_yahoo_data()
+print(data.json())
