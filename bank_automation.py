@@ -235,8 +235,10 @@ class Bancolombia:
             if option == 0:
                 self.__controller.save_screen(binance_id)
             else:
+                self.__controller.save_screen(binance_id)
                 raise TransferNotFinished
         except TimeoutError:
+            self.__controller.save_screen(binance_id)
             raise TransferFailAtTheEnd
         try:
             time.sleep(7)

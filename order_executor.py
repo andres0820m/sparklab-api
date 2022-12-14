@@ -188,12 +188,16 @@ class OrderExecutor:
                                                              text="the order {} have wrong account data !!".format(
                                                                  order.binance_id))
 
-                        except (GettingTokenError, ContinueForTokenError, TimeoutError, TransferNotFinished, IndexError):
+                        except (
+                        GettingTokenError, ContinueForTokenError, TimeoutError, TransferNotFinished, IndexError):
                             self.__bancolombia.change_last_login()
                             print("Trasaction fails !!")
                             order.status = 'fail'
                             self.__update_counter(order=order)
                             self.order_wrapped.update_order(order)
+                            img = Image.open('imgs/{}.png'.format(order.binance_id))
+                            self.__telegram_bot.send_photo(chat_id=AUT_USER, img=img, caption='Error!!!'
+                                                           )
                             self.__telegram_bot.send_message(chat_id=AUT_USER,
                                                              text="order {} fails !!".format(order.binance_id))
 
