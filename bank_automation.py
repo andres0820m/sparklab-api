@@ -10,7 +10,8 @@ from guard_data import read_file
 from tools import str_only_alphanumeric, str_only_numbers
 from constants import BANCOLOMBIA_APP_PACKAGE_NAME, AccountType, IDType, BBVA_APP_PACKAGE_NAME, KIWI_BROSER, \
     NEQUI_PSE_URL, MAPPED_TABS_BBVA_ACCOUNT_TYPE, MAPPED_TABS_PSE_BANK_SELECTOR, AUT_USER, INTERNAL_ORDERS_LINK, \
-    ORDERS_URL, DELETE_COMMAND
+    ORDERS_URL, DELETE_COMMAND, NEQUI_ACCOUNT_DATA_ERROR, BANCOLOMBIA_IS_DOWN, ALREADY_SUBSCRIBER, \
+    BANCOLOMBIA_ACCOUNT_ERROR, ACCOUNT_CANT_HANDLE_THE_MONEY
 from Errors import *
 from utils import get_absolute_points
 import requests
@@ -37,20 +38,6 @@ class Bancolombia:
 
     def change_last_login(self):
         self.__last_login = None
-
-    def check_transfer_error(self, check_text, retry=30, click_on_continue=False):
-        while retry != 0:
-            if self.__controller.find_text(check_text):
-                self.__controller.click_on_text(check_text)
-                break
-            if self.__controller.find_text("intentalo mas tarde"):
-                if click_on_continue:
-                    self.__controller.click_on_text("intentalo mas tarde")
-                else:
-                    raise NequiAccountError
-            if self.__controller.find_text("verifica la inscripcion"):
-                raise BancolombiaError
-            retry -= 1
 
     def login(self, fingerprint=False):
         check = True
@@ -161,14 +148,15 @@ class Bancolombia:
         self.__controller.click_on_text('Continuar', timeout=15.0)
         self.__controller.click_on_text('Inscribir', timeout=15.0)
         option, _ = self.__controller.wait_for_any_of_this_texts(
-            ['Inscripcion Exitosa', 'El producto ya se encuentra', 'verifica la inscripcion', 'intentalo mas tarde'],
+            ['Inscripcion Exitosa', ALREADY_SUBSCRIBER, BANCOLOMBIA_ACCOUNT_ERROR, '028',
+             NEQUI_ACCOUNT_DATA_ERROR, BANCOLOMBIA_IS_DOWN, '999', ACCOUNT_CANT_HANDLE_THE_MONEY,
+             'problemas de conexion'],
             timeout=120
         )
         if option == 0:
             self.__controller.click_on_text('Inicio', timeout=15.0)
             self.__print('Inscription exitosa')
         elif option == 1:
-            print("arreglo")
             self.__controller.click_on_text('Regresar', min_y=0.63, max_y=0.7, timeout=15)
             self.__controller.click_on_text('Inicio', timeout=10.0)
             raise AlreadyEnrolledAccount
@@ -179,10 +167,16 @@ class Bancolombia:
                 self.__controller.input_keyevent(keycodes.KEYCODE_TAB)
                 time.sleep(0.1)
             self.__controller.input_keyevent(keycodes.KEYCODE_ENTER)
-            raise BancolombiaError
-        elif option == 3:
+            raise WrongAccountData
+        elif option == 3 or option == 4 or option == 6:
             self.__controller.click_on_text('intentalo mas tarde', timeout=10)
-            raise NequiAccountError
+            raise WrongAccountData
+        elif option == 5:
+            raise BankColombiaIsDown
+        elif option == 7:
+            raise AccountCantHandleTheMoney
+        elif option == 8:
+            raise ConnectionError
         self.__last_login = datetime.now()
 
     def transfer(self,
@@ -199,45 +193,51 @@ class Bancolombia:
         self.__controller.click_on_text('Inicio', delay=1.0, timeout=10)
         self.__controller.click_on_text('Transacciones', min_y=0.7)
         self.__controller.click_on_text('Transferir dinero', timeout=20)
-        self.__controller.click_on_text('Enviar dinero', idx=1, timeout=20)
-        self.__controller.click_on_text(self.bank_data['account_number'], timeout=10)
-        self.__controller.input_text(amount)
-        time.sleep(0.5)
-        self.__controller.click_on_text('Continuar')
-        time.sleep(0.5)
-        if not is_nequi:
-            self.__controller.click_on_text('De Bancolombia', idx=1, timeout=10)
-        else:
-            self.__controller.click_on_text('De Nequi', timeout=10)
-        time.sleep(0.5)
-        self.__controller.wait_for_text('Producto', 10)
-        time.sleep(0.5)
-        self.__controller.input_text(nickname)
-        time.sleep(0.5)
-        if is_nequi:
-            self.__controller.input_keyevent(keycodes.KEYCODE_TAB)
-            time.sleep(0.3)
-            self.__controller.click_on_text('Continuar')
-        else:
-            self.__controller.click_on_text(account_type)
+        retry = 3
+        while retry != 0:
+            self.__controller.click_on_text('Enviar dinero', idx=1, timeout=20)
+            self.__controller.click_on_text(self.bank_data['account_number'], timeout=10)
+            self.__controller.input_text(amount)
             time.sleep(0.5)
             self.__controller.click_on_text('Continuar')
             time.sleep(0.5)
-            self.__controller.click_on_text('Siguiente', timeout=5.0)
-        time.sleep(0.5)
-        self.__controller.click_on_text('Enviar dinero', timeout=15.0)
-        time.sleep(7)
-        try:
-            option, _ = self.__controller.wait_for_any_of_this_texts(
-                ['exitosa', 'intentalo mas tarde'],
-                timeout=120
-            )
-            if option == 0:
-                self.__controller.save_screen(binance_id)
+            if not is_nequi:
+                self.__controller.click_on_text('De Bancolombia', idx=1, timeout=10)
             else:
-                raise TransferNotFinished
-        except TimeoutError:
-            raise TransferFailAtTheEnd
+                self.__controller.click_on_text('De Nequi', timeout=10)
+            time.sleep(0.5)
+            self.__controller.wait_for_text('Producto', 10)
+            time.sleep(0.5)
+            self.__controller.input_text(nickname)
+            time.sleep(0.5)
+            if is_nequi:
+                self.__controller.input_keyevent(keycodes.KEYCODE_TAB)
+                time.sleep(0.3)
+                self.__controller.click_on_text('Continuar')
+            else:
+                self.__controller.click_on_text(account_type)
+                time.sleep(0.5)
+                self.__controller.click_on_text('Continuar')
+                time.sleep(0.5)
+                self.__controller.click_on_text('Siguiente', timeout=5.0)
+            time.sleep(0.5)
+            self.__controller.click_on_text('Enviar dinero', timeout=15.0)
+            time.sleep(7)
+            try:
+                option, _ = self.__controller.wait_for_any_of_this_texts(
+                    ['exitosa', 'intentalo mas tarde', 'problemas de conexion'],
+                    timeout=120
+                )
+                if option == 0:
+                    self.__controller.save_screen(binance_id)
+                    retry = 0
+                else:
+                    retry -= 1
+                    if retry == 0:
+                        raise TransferNotFinished
+            except TimeoutError:
+                self.__controller.save_screen(binance_id)
+                raise TransferFailAtTheEnd
         try:
             time.sleep(7)
             self.__controller.click_on_text('Inicio', timeout=5.0)
