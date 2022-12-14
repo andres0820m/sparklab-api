@@ -83,8 +83,3 @@ ORDER_TEMPLATE = {'binance_id': '**********',
                   'id_number': '**********',
                   'account_type': 1,
                   'document_type': 1}
-NEQUI_ACCOUNT_DATA_ERROR = '002'
-BANCOLOMBIA_IS_DOWN = '005'
-ACCOUNT_CANT_HANDLE_THE_MONEY = '034'
-ALREADY_SUBSCRIBER = 'El producto ya se encuentra'
-BANCOLOMBIA_ACCOUNT_ERROR = 'verifica la inscripcion'

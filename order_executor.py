@@ -180,7 +180,7 @@ class OrderExecutor:
                             self.__telegram_bot.send_message(chat_id=AUT_USER,
                                                              text=text.format(order.binance_id))
 
-                        except WrongAccountData:
+                        except (BancolombiaError, NequiAccountError):
                             order.status = 'waiting_for_review'
                             self.order_wrapped.update_order(order)
 
@@ -188,24 +188,7 @@ class OrderExecutor:
                                                              text="the order {} have wrong account data !!".format(
                                                                  order.binance_id))
 
-                        except BankColombiaIsDown:
-                            order.status = 'waiting_for_review'
-                            self.order_wrapped.update_order(order)
-
-                            self.__telegram_bot.send_message(chat_id=AUT_USER,
-                                                             text="bancolombia is down !!!!!")
-
-                        except AccountCantHandleTheMoney:
-                            order.status = 'waiting_for_review'
-                            self.order_wrapped.update_order(order)
-
-                            self.__telegram_bot.send_message(chat_id=AUT_USER,
-                                                             text="the order {} can't handle the money !!".format(
-                                                                 order.binance_id))
-
-                        except (
-                                GettingTokenError, ContinueForTokenError, TimeoutError, TransferNotFinished,
-                                IndexError, ConnectionError):
+                        except (GettingTokenError, ContinueForTokenError, TimeoutError, TransferNotFinished, IndexError):
                             self.__bancolombia.change_last_login()
                             print("Trasaction fails !!")
                             order.status = 'fail'
@@ -213,9 +196,6 @@ class OrderExecutor:
                             self.order_wrapped.update_order(order)
                             self.__telegram_bot.send_message(chat_id=AUT_USER,
                                                              text="order {} fails !!".format(order.binance_id))
-                            img = Image.open('imgs/{}.png'.format(order.binance_id))
-                            self.__telegram_bot.send_photo(chat_id=AUT_USER, img=img,
-                                                           caption='order {} fails!'.format(order.binance_id))
 
                 time.sleep(1)
             except ApiConnectionError:
