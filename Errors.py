@@ -28,16 +28,10 @@ class WrongDataOrAccountAlreadySubscribe(Exception): pass
 class OrderAsPaidError(Exception): pass
 
 
+class NequiAccountError(Exception): pass
+
+
+class BancolombiaError(Exception): pass
+
+
 class ApiConnectionError(Exception): pass
-
-
-class WrongAccountData(Exception): pass
-
-
-class BankColombiaIsDown(Exception): pass
-
-
-class AccountCantHandleTheMoney(Exception): pass
-
-
-class ConnectionError(Exception): pass
