@@ -241,4 +241,7 @@ class BinanceInfoGetter(ABC):
     @staticmethod
     def get_yahoo_data():
         data = send_request(method='GET', headers=HTML_HEADERS, url=YAHOO_TRM_PRICE_URL)
-        return data
+        try:
+            return data.json()['chart']['result'][0]['meta']['regularMarketPrice']
+        except KeyError:
+            return data.json()['chart']['result'][0]['meta']['previousClose']
