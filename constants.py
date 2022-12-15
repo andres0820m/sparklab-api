@@ -26,8 +26,8 @@ else:
     ORDERS_URL = 'http://ec2-54-211-239-148.compute-1.amazonaws.com/orders/{}/'
     MAIN_URL = 'http://ec2-54-211-239-148.compute-1.amazonaws.com/{}'
 VALID_BANKS = ['BBVA', 'bancolombia', 'pse_bbva']
-VALID_ACCOUNTS_TYPE = ['Ahorros', 'corriente', ""]
-VALID_DOCUMENT_TYPE = ['cc', 'pasaporte', 'cc_ex', ""]
+VALID_ACCOUNTS_TYPE = ['Ahorros', 'corriente']
+VALID_DOCUMENT_TYPE = ['cc', 'pasaporte', 'cc_ex']
 STATUS_DATA = {"created": '🔜', "running": '🏃‍', "finish": '✅', "done": '✅', "fail": '😩'}
 AUT_USER = config.AUT_USER
 PARTNER_IDS = [2078612899, 1208740573, 1513124614]
