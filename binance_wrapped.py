@@ -245,3 +245,5 @@ class BinanceInfoGetter(ABC):
             return data.json()['chart']['result'][0]['meta']['regularMarketPrice']
         except KeyError:
             return data.json()['chart']['result'][0]['meta']['previousClose']
+
+    def get_asset_price(self, asset, ):
