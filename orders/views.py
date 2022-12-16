@@ -155,7 +155,7 @@ class CheckAccount(APIView):
     def get(self, request):
         account = request.data['account']
         try:
-            order = Order.objects.filter(user=request.user).filter(account=account)
+            order = Order.objects.filter(user=request.user).filter(status='done').filter(account=account)
             if len(order) > 1:
                 return Response("True", status=status.HTTP_200_OK)
             else:

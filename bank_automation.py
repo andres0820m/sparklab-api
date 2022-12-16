@@ -244,9 +244,9 @@ class Bancolombia:
             time.sleep(7)
             self.__controller.click_on_text('Inicio', timeout=5.0)
             self.__print('Transaccion exitosa')
-
         except TimeoutError:
-            raise TransferNotFinished
+            self.__controller.save_screen(binance_id)
+            raise TransferFailAtTheEnd
         self.__last_login = datetime.now()
 
 
