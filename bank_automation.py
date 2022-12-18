@@ -196,38 +196,45 @@ class Bancolombia:
         amount = re.sub(',', '', amount)
         amount = str(int(float(amount)))
         amount = str_only_numbers(amount)
-        self.__controller.click_on_text('Inicio', delay=1.0, timeout=10)
-        self.__controller.click_on_text('Transacciones', min_y=0.7)
-        self.__controller.click_on_text('Transferir dinero', timeout=20)
-        retry = 2
+        retry = 3
         while retry != 0:
-            self.__controller.click_on_text('Enviar dinero', idx=1, timeout=20)
-            self.__controller.click_on_text(self.bank_data['account_number'], timeout=10)
-            self.__controller.input_text(amount)
-            time.sleep(0.5)
-            self.__controller.click_on_text('Continuar')
-            time.sleep(0.5)
-            if not is_nequi:
-                self.__controller.click_on_text('De Bancolombia', idx=1, timeout=10)
-            else:
-                self.__controller.click_on_text('De Nequi', timeout=10)
-            time.sleep(0.5)
-            self.__controller.wait_for_text('Producto', 10)
-            time.sleep(0.5)
-            self.__controller.input_text(nickname)
-            time.sleep(0.5)
-            if is_nequi:
-                self.__controller.input_keyevent(keycodes.KEYCODE_TAB)
-                time.sleep(0.3)
-                self.__controller.click_on_text('Continuar')
-            else:
-                self.__controller.click_on_text(account_type)
+            try:
+                self.__controller.click_on_text('Inicio', delay=1.0, timeout=10)
+                self.__controller.click_on_text('Transacciones', min_y=0.7)
+                self.__controller.click_on_text('Transferir dinero', timeout=20)
+                self.__controller.click_on_text('Enviar dinero', idx=1, timeout=20)
+                self.__controller.click_on_text(self.bank_data['account_number'], timeout=10)
+                self.__controller.input_text(amount)
                 time.sleep(0.5)
                 self.__controller.click_on_text('Continuar')
                 time.sleep(0.5)
-                self.__controller.click_on_text('Siguiente', timeout=5.0)
-            time.sleep(0.5)
-            self.__controller.click_on_text('Enviar dinero', timeout=15.0)
+                if not is_nequi:
+                    self.__controller.click_on_text('De Bancolombia', idx=1, timeout=10)
+                else:
+                    self.__controller.click_on_text('De Nequi', timeout=10)
+                time.sleep(0.5)
+                self.__controller.wait_for_text('Producto', 10)
+                time.sleep(0.5)
+                self.__controller.input_text(nickname)
+                time.sleep(0.5)
+                if is_nequi:
+                    self.__controller.input_keyevent(keycodes.KEYCODE_TAB)
+                    time.sleep(0.3)
+                    self.__controller.click_on_text('Continuar')
+                else:
+                    self.__controller.click_on_text(account_type)
+                    time.sleep(0.5)
+                    self.__controller.click_on_text('Continuar')
+                    time.sleep(0.5)
+                    self.__controller.click_on_text('Siguiente', timeout=5.0)
+                time.sleep(0.5)
+                self.__controller.click_on_text('Enviar dinero', timeout=15.0)
+            except TimeoutError:
+                try:
+                    self.__controller.click_on_text('intentalo mas tarde', timeout=10)
+                    retry -= 1
+                except TimeoutError:
+                    raise TransferNotFinished
             time.sleep(7)
             try:
                 option, _ = self.__controller.wait_for_any_of_this_texts(
