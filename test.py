@@ -82,9 +82,10 @@ with open('binance.data', 'rb') as enc_file:
     listener = BinanceListener(data=data, name='alvaro', config=config, order_wrapped=OrderWrapped())
 test_model = BinanceListener2()
 
-order_data = listener.get_order_info('20434209045636300800')['data']
-
-test_model.wws_on_message(order_data)
-
-data = listener.get_yahoo_data()
-print(data)
+# order_data = listener.get_order_info('20412092467247161344')['data']
+# print(order_data)
+# test_model.wws_on_message(order_data)
+# orders = OrderWrapped()
+# order = orders.get_order('20412092467247161344')
+prices = listener.get_asset_price(asset='USDT', amount=5000000, min_limit=0, banks=['BancolombiaSA'], trade_type='SELL')
+print(prices)

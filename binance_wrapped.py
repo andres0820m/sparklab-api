@@ -22,6 +22,7 @@ CREDENTIALS_URL = '/sapi/v1/c2c/chat/retrieveChatCredential'
 ORDER_PAID_URL = '/sapi/v1/c2c/orderMatch/markOrderAsPaid'
 ORDER_DETAILS_URL = '/sapi/v1/c2c/orderMatch/getUserOrderDetail'
 DRIVE_PARENT_FOLDER = '1T3kw9-qer4o_zhlCOFt4-_gLaxxv8xh7'
+ADS_URL = '/sapi/v1/c2c/ads/search'
 
 
 class BinanceInfoGetter(ABC):
@@ -246,4 +247,15 @@ class BinanceInfoGetter(ABC):
         except KeyError:
             return data.json()['chart']['result'][0]['meta']['previousClose']
 
-    def get_asset_price(self, asset, ):
+    def get_asset_price(self, asset, amount, min_limit, banks, trade_type, fiat='cop'):
+        data = {
+            "page": 1,
+            "rows": 10,
+            "asset": asset,
+            "tradeType": trade_type,
+            "fiat": fiat,
+            "payTypes": banks,
+            "transAmount": amount,
+            "publisherType": "merchant"
+        }
+        return self.send_signed_request(http_method='POST', url_path=ADS_URL, data=data)
