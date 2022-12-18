@@ -151,7 +151,9 @@ class OrderExecutor:
                             try:
                                 self.listener.mark_order_as_paid(pay_id=order.pay_id, order_number=order.binance_id)
                             except:
-                                print("no se pudo marcar la orden como paga !!")
+                                self.__telegram_bot.send_message(chat_id=AUT_USER,
+                                                                 text="la orden {} no se pudo marcar como paga !!!".format(
+                                                                     order.binance_id))
 
                         except WrongDataOrAccountAlreadySubscribe:
                             order.fail_retry = 3
@@ -171,7 +173,7 @@ class OrderExecutor:
 
                         except TransferFailAtTheEnd:
                             order.fail_retry = 3
-                            order.status = 'fail'
+                            order.status = 'waiting_for_review'
                             self.order_wrapped.update_order(order)
                             if order.bank.bank == "BBVA":
                                 text = "la orden {} fallo al final  y se inscribio!! revisar app del banco !!"
@@ -179,6 +181,12 @@ class OrderExecutor:
                                 text = " la orden {} fallo al final !! revisar app del banco !!"
                             self.__telegram_bot.send_message(chat_id=AUT_USER,
                                                              text=text.format(order.binance_id))
+                            try:
+                                img = Image.open('imgs/{}.png'.format(order.binance_id))
+                                self.__telegram_bot.send_photo(chat_id=AUT_USER, img=img, caption='Error!!!'
+                                                               )
+                            except:
+                                pass
 
                         except (BancolombiaError, NequiAccountError):
                             order.status = 'waiting_for_review'
