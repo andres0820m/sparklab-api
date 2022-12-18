@@ -243,6 +243,8 @@ class Bancolombia:
                 )
                 if option == 0:
                     self.__controller.save_screen(binance_id)
+                    retry = 0
+                    break
                 else:
                     if retry != 0:
                         retry -= 1
