@@ -30,7 +30,7 @@ VALID_ACCOUNTS_TYPE = ['Ahorros', 'corriente']
 VALID_DOCUMENT_TYPE = ['cc', 'pasaporte', 'cc_ex']
 STATUS_DATA = {"created": '🔜', "running": '🏃‍', "finish": '✅', "done": '✅', "fail": '😩'}
 AUT_USER = config.AUT_USER
-PARTNER_IDS = [2078612899, 1208740573, 1513124614]
+PARTNER_IDS = [2078612899,] #1208740573, 1513124614]
 P2P_SCREENSHOT_BOT = config.P2P_SCREENSHOT_BOT
 P2P_DASHBOARD_BOT = config.P2P_DASHBOARD_BOT
 API_URL = 'https://api.binance.com'
@@ -38,7 +38,10 @@ INTERNAL_ORDERS_LINK = "http://localhost:8000/admin/orders/order/{}/change/"
 ORDER_STATUS_TO_RUN = ['created', 'fail', 'running']
 DELETE_COMMAND = "--longpress $(printf 'KEYCODE_DEL %.0s' {1..250})"
 MAX_TIME_TO_CREATED_ORDER_SECONDS = 21600
-
+ORDER_MIN_LIMIT_LIST = [5000000, 3000000, 1000000, 700000]
+COMPETITION_QUANTITY = 2000
+MAX_TRM_DIFFERENCE = 150
+EXCLUDE_USERS = ['Amj_crypto']
 
 class AccountType(Enum):
     AHORROS = 0
@@ -86,6 +89,7 @@ ORDER_TEMPLATE = {'binance_id': '**********',
                   'document_type': 1}
 NEQUI_ACCOUNT_DATA_ERROR = '002'
 BANCOLOMBIA_IS_DOWN = '005'
+STABLE_ASSETS = ['USDT', 'BUSD']
 ACCOUNT_CANT_HANDLE_THE_MONEY = '034'
 ALREADY_SUBSCRIBER = 'El producto ya se encuentra'
 BANCOLOMBIA_ACCOUNT_ERROR = 'verifica la inscripcion'

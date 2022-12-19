@@ -11,7 +11,7 @@ import requests
 import websocket
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
-from constants import HTML_HEADERS, YAHOO_TRM_PRICE_URL
+from constants import HTML_HEADERS, YAHOO_TRM_PRICE_URL, STABLE_ASSETS, MAX_TRM_DIFFERENCE, EXCLUDE_USERS
 from Errors import OrderAsPaidError
 from constants import API_URL
 from telegram_wrapped import TelegramBot
@@ -23,11 +23,14 @@ ORDER_PAID_URL = '/sapi/v1/c2c/orderMatch/markOrderAsPaid'
 ORDER_DETAILS_URL = '/sapi/v1/c2c/orderMatch/getUserOrderDetail'
 DRIVE_PARENT_FOLDER = '1T3kw9-qer4o_zhlCOFt4-_gLaxxv8xh7'
 ADS_URL = '/sapi/v1/c2c/ads/search'
+BRANCH_LONG = 2
 
 
 class BinanceInfoGetter(ABC):
     def __init__(self, data, name, config, order_wrapped):
         self.name = name
+        self.trm = None
+        self.__init_trm_value()
         self.telegram_bot = TelegramBot()
         self.config = config
         self.order_wrapped = order_wrapped
@@ -105,13 +108,13 @@ class BinanceInfoGetter(ABC):
                 return response.json()
 
     # used for sending public data request
-    def send_public_request(self, url_path, payload={}):
+    def send_public_request(self, url_path, method='GET', payload={}, ):
         query_string = urlencode(payload, True)
         url = API_URL + url_path
         if query_string:
             url = url + '?' + query_string
         print("{}".format(url))
-        response = self.__dispatch_request('GET')(url=url)
+        response = self.__dispatch_request(method)(url=url)
         return response.json()
 
     def get_data_df(self, url, init_date, last_date):
@@ -239,15 +242,32 @@ class BinanceInfoGetter(ABC):
                 order['status'] = 'waiting_for_review'
         return order
 
+    def __get_trm_value(self):
+        while 1:
+            self.trm = self.get_yahoo_data()
+            print(self.trm)
+            time.sleep(10)
+
+    def __init_trm_value(self):
+        threading.Thread(target=self.__get_trm_value).start()
+
     @staticmethod
     def get_yahoo_data():
         data = send_request(method='GET', headers=HTML_HEADERS, url=YAHOO_TRM_PRICE_URL)
         try:
-            return data.json()['chart']['result'][0]['meta']['regularMarketPrice']
+            return float(data.json()['chart']['result'][0]['meta']['regularMarketPrice'])
         except KeyError:
-            return data.json()['chart']['result'][0]['meta']['previousClose']
+            return float(data.json()['chart']['result'][0]['meta']['previousClose'])
 
-    def get_asset_price(self, asset, amount, min_limit, banks, trade_type, fiat='cop'):
+    def get_asset_price(self, asset, amount, min_limits, banks, trade_type, fiat='COP'):
+        if amount > 40000000:
+            trans_mount = 5000000
+        elif 20000000 <= amount <= 40000000:
+            trans_mount = 3000000
+        else:
+            trans_mount = 2000000
+
+        print(trans_mount)
         data = {
             "page": 1,
             "rows": 10,
@@ -255,7 +275,108 @@ class BinanceInfoGetter(ABC):
             "tradeType": trade_type,
             "fiat": fiat,
             "payTypes": banks,
-            "transAmount": amount,
+            "transAmount": trans_mount,
             "publisherType": "merchant"
         }
-        return self.send_signed_request(http_method='POST', url_path=ADS_URL, data=data)
+        ads = self.send_signed_request(http_method='POST', url_path=ADS_URL, data=data)['data']
+        ads_fits_trm = []
+        for ad in ads:
+            price = float(ad['adv']['price'])
+            min_limit = float(ad['adv']['minSingleTransAmount'])
+            quantity = float(ad['adv']['tradableQuantity'])
+            name = ad['advertiser']['nickName']
+            if self.trm - price >= MAX_TRM_DIFFERENCE and (
+                    quantity >= 3000) and name not in EXCLUDE_USERS:
+                ads_fits_trm.append({'price': price, 'name': name, 'limit': min_limit})
+        number_of_ads = len(ads_fits_trm)
+        if not ads_fits_trm:
+            return {'price': self.trm - MAX_TRM_DIFFERENCE, 'limit': 700000}
+        best_ad = ads_fits_trm[0]
+        best_post = 0
+        print(ads_fits_trm)
+        for ad_position, ad in enumerate(ads_fits_trm):
+            if ad_position < number_of_ads - 1 and abs(best_post - ad_position) < BRANCH_LONG:
+                if best_ad['price'] - ad['price'] >= 5:
+                    best_ad = ad
+                    best_post = ad_position
+                elif (best_ad['limit'] - ad['limit'] / best_ad['limit']) <= 0.2 and ad['limit'] < best_ad[
+                    'limit']:
+                    best_ad = ad
+                    best_post = ad_position
+        if best_ad['name'] not in ['AE_Mejia', ]:
+            if (trans_mount - best_ad['limit']) / trans_mount < 0.5:
+                return {'price': best_ad['price'], 'limit': best_ad['limit'] - (best_ad['limit'] * 0.1)}
+            else:
+                return {'price': best_ad['price'] + 0.01, 'limit': best_ad['limit']}
+        else:
+            return {'price': best_ad['price'], 'limit': best_ad['limit']}
+
+    def get_ad_by_number(self, adb_number):
+        url = '/sapi/v1/c2c/ads/getDetailByNo'
+        return self.send_signed_request(http_method='POST', url_path=url, payload={'adsNo': adb_number})
+
+    def update_abd(self, adb_number, price, low_limit, asset, trade_type='BUY', fiat='COP'):
+
+        data = {
+            "advNo": adb_number,
+            "advStatus": 1,
+            "asset": asset,
+            "buyerBtcPositionLimit": '0.01000000',
+            "buyerKycLimit": 1,
+            "buyerRegDaysLimit": -1,
+            "fiatUnit": fiat,
+            "maxSingleTransAmount": '200000000',
+            "minSingleTransAmount": str(int(low_limit)),
+            "payTimeLimit": 360,
+            "price": str(price),
+            "priceType": 1,
+            'rateFloatingRatio': '0.00000000',
+            "tradeType": trade_type,
+        }
+
+        url = '/sapi/v1/c2c/ads/update'
+        self.send_signed_request(http_method='POST', url_path=url, data=data)
+
+
+'''
+        if asset in STABLE_ASSETS:
+            for limit in min_limits:
+                for ad_number, ad in enumerate(ads):
+                    price = float(ad['adv']['price'])
+                    min_limit = float(ad['adv']['minSingleTransAmount'])
+                    quantity = float(ad['adv']['tradableQuantity'])
+                    name = ad['advertiser']['nickName']
+                    print(name)
+                    if quantity * price >= (amount * 0.2) and name != 'Amj_crypto':
+                        if min_limit <= limit:
+                            if price <= (self.trm - MAX_TRM_DIFFERENCE):
+                                if ad_number == 0:
+                                    back_number = 1
+                                    next_name = ads[ad_number + back_number]['advertiser']['nickName']
+                                    while next_name == 'Amj_crypto':
+                                        back_number += 1
+                                        next_name = ads[ad_number + back_number]['advertiser']['nickName']
+                                    next_price = float(ads[ad_number + back_number]['adv']['price'])
+                                    if price - next_price > 5:
+                                        return next_price + 5, min_limit - (min_limit * 0.3)
+                                    else:
+                                        return price, min_limit - (min_limit * 0.4)
+                                else:
+                                    return price + 0.01, min_limit
+                            elif ad_number < 9:
+                                next_price = float(ads[ad_number + 1]['adv']['price'])
+                                next_min_limit = float(ads[ad_number + 1]['adv']['minSingleTransAmount'])
+                                difference = next_price - (self.trm - MAX_TRM_DIFFERENCE)
+                                limit_difference = min_limit - next_min_limit
+                                if next_price < (self.trm - MAX_TRM_DIFFERENCE) and limit_difference >= (
+                                        difference * 0.15):
+                                    if difference >= 5:
+                                        ad_price = next_price + 5
+                                    else:
+                                        ad_price = next_price + difference
+                                    return ad_price, next_min_limit - (next_min_limit * 0.1)
+                            else:
+                                pass
+            return self.trm - MAX_TRM_DIFFERENCE, min_limits[-1]
+
+'''
