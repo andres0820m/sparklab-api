@@ -30,6 +30,11 @@ class BinanceInfoGetter(ABC):
     def __init__(self, data, name, config, order_wrapped):
         self.name = name
         self.trm = None
+        self.spot_btc = None
+        self.spot_eth = None
+        self.spot_bnb = None
+        self.spot_matic = None
+        self.spot_doge = None
         self.__init_trm_value()
         self.telegram_bot = TelegramBot()
         self.config = config
@@ -293,7 +298,6 @@ class BinanceInfoGetter(ABC):
             return {'price': self.trm - MAX_TRM_DIFFERENCE, 'limit': 700000}
         best_ad = ads_fits_trm[0]
         best_post = 0
-        print(ads_fits_trm)
         for ad_position, ad in enumerate(ads_fits_trm):
             if ad_position < number_of_ads - 1 and abs(best_post - ad_position) < BRANCH_LONG:
                 if best_ad['price'] - ad['price'] >= 5:

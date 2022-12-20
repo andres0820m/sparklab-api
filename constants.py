@@ -30,7 +30,7 @@ VALID_ACCOUNTS_TYPE = ['Ahorros', 'corriente']
 VALID_DOCUMENT_TYPE = ['cc', 'pasaporte', 'cc_ex']
 STATUS_DATA = {"created": '🔜', "running": '🏃‍', "finish": '✅', "done": '✅', "fail": '😩'}
 AUT_USER = config.AUT_USER
-PARTNER_IDS = [2078612899,] #1208740573, 1513124614]
+PARTNER_IDS = [2078612899, 1208740573, 1513124614]
 P2P_SCREENSHOT_BOT = config.P2P_SCREENSHOT_BOT
 P2P_DASHBOARD_BOT = config.P2P_DASHBOARD_BOT
 API_URL = 'https://api.binance.com'
@@ -42,6 +42,7 @@ ORDER_MIN_LIMIT_LIST = [5000000, 3000000, 1000000, 700000]
 COMPETITION_QUANTITY = 2000
 MAX_TRM_DIFFERENCE = 150
 EXCLUDE_USERS = ['Amj_crypto']
+
 
 class AccountType(Enum):
     AHORROS = 0
@@ -101,3 +102,4 @@ HTML_HEADERS = {
     "content-type": "application/json",
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) "
                   "Chrome/103.0.0.0 Safari/537.36 "}
+SYMBOLS = {'ETH': 'ETHUSDT', 'BTC': 'BTCUSDT', 'BNB': 'BNBUSDT'}
