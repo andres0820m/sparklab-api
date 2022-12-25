@@ -73,12 +73,12 @@ class OrderExecutor:
                                 self.__nequi_pse_bbva.pay(amount=order.amount, number=order.account,
                                                           binance_id=order.binance_id)
                             if order.bank.bank == "bancolombia":
-                                status = self.order_wrapped.check_account(order.account)
-                                print(status)
+                                # status = self.order_wrapped.check_account(order.account)
+                                # print(status)
                                 self.__bancolombia.login(fingerprint=self.config.bancolombia_fingerprint)
-                                if status.status_code == 200:
-                                    order.subscribe = True
-                                    self.order_wrapped.update_order(order)
+                                # if status.status_code == 200:
+                                #    order.subscribe = True
+                                #    self.order_wrapped.update_order(order)
                                 try:
                                     if not order.subscribe:
                                         self.listener.send_message(binance_id=order.binance_id,

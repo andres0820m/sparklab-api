@@ -65,11 +65,14 @@ def mapped_dict_from_data(acc_dict, data, bank):
         pass
 
 
-def send_request(method, url, headers={}, params={}, json_data={}, retry=3, timeout=5):
+def send_request(method, url, headers={}, params={}, json_data={}, retry=3, timeout=5, use_data=True):
     while retry != 0:
         try:
-            data = requests.request(method=method, url=url, timeout=timeout, json=json_data, params=params,
-                                    headers=headers)
+            if use_data:
+                data = requests.request(method=method, url=url, timeout=timeout, json=json_data, params=params,
+                                        headers=headers)
+            else:
+                data = requests.request(method=method, url=url, timeout=timeout)
             return data
         except (ConnectTimeout, ConnectionError, ReadTimeout):
             retry -= 1

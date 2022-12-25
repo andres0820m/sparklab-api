@@ -97,15 +97,15 @@ test_model = BinanceListener2()
 while 1:
     ad = listener.get_asset_price(asset='USDT', amount=90000000, min_limits=ORDER_MIN_LIMIT_LIST,
                                   banks=['BancolombiaSA'], trade_type='SELL')
+
+    btc_ad = listener.get_non_stable_price(asset='BTC', amount=90000000, banks=['BancolombiaSA'], trade_type='SELL')
+    eth_ad = listener.get_non_stable_price(asset='ETH', amount=90000000, banks=['BancolombiaSA'], trade_type='SELL')
+    bnb_ad = listener.get_non_stable_price(asset='BNB', amount=90000000, banks=['BancolombiaSA'], trade_type='SELL')
     print(ad)
-    #price = ad['price']
-    #limit = ad['limit']
-    #listener.update_abd(adb_number='11428352985523347456', price=price, low_limit=limit, asset='USDT')
-    #ad = listener.get_asset_price(asset='BUSD', amount=90000000, min_limits=ORDER_MIN_LIMIT_LIST,
-    #                                        banks=['BancolombiaSA'], trade_type='SELL')
-    #price = ad['price']
-    #limit = ad['limit']
-    #listener.update_abd(adb_number='11428353889992835072', price=price, low_limit=limit, asset='BUSD')
-    delay = random.randint(10, 15)
+
+    print(btc_ad)
+    print(eth_ad)
+    print(bnb_ad)
+    delay = random.randint(15, 20)
     print("the delay for update is: {}".format(str(delay)))
     time.sleep(delay)

@@ -30,7 +30,7 @@ VALID_ACCOUNTS_TYPE = ['Ahorros', 'corriente']
 VALID_DOCUMENT_TYPE = ['cc', 'pasaporte', 'cc_ex']
 STATUS_DATA = {"created": '🔜', "running": '🏃‍', "finish": '✅', "done": '✅', "fail": '😩'}
 AUT_USER = config.AUT_USER
-PARTNER_IDS = [2078612899, 1208740573, 1513124614]
+PARTNER_IDS = [2078612899, ]  # 1208740573, 1513124614]
 P2P_SCREENSHOT_BOT = config.P2P_SCREENSHOT_BOT
 P2P_DASHBOARD_BOT = config.P2P_DASHBOARD_BOT
 API_URL = 'https://api.binance.com'
@@ -40,7 +40,7 @@ DELETE_COMMAND = "--longpress $(printf 'KEYCODE_DEL %.0s' {1..250})"
 MAX_TIME_TO_CREATED_ORDER_SECONDS = 21600
 ORDER_MIN_LIMIT_LIST = [5000000, 3000000, 1000000, 700000]
 COMPETITION_QUANTITY = 2000
-MAX_TRM_DIFFERENCE = 150
+MAX_TRM_DIFFERENCE = 130
 EXCLUDE_USERS = ['Amj_crypto']
 
 
@@ -103,3 +103,6 @@ HTML_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) "
                   "Chrome/103.0.0.0 Safari/537.36 "}
 SYMBOLS = {'ETH': 'ETHUSDT', 'BTC': 'BTCUSDT', 'BNB': 'BNBUSDT'}
+SPOT_PRICE_URL = 'https://api.binance.com/api/v3/ticker/price?symbol={}'
+TRANS_AMOUNT = [5000000, 3000000, 2000000]
+MIN_LIMIT = 700000
