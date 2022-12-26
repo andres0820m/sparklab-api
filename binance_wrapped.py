@@ -29,7 +29,7 @@ BRANCH_LONG = 1
 
 class BinanceInfoGetter(ABC):
     def __init__(self, data, name, config, order_wrapped):
-        self.name = name
+        self.name = config.user_name
         self.trm = None
         self.spot_btc = None
         self.spot_eth = None
@@ -325,11 +325,11 @@ class BinanceInfoGetter(ABC):
         url = '/sapi/v1/c2c/ads/getDetailByNo'
         return self.send_signed_request(http_method='POST', url_path=url, payload={'adsNo': adb_number})
 
-    def update_abd(self, adb_number, price, low_limit, asset, trade_type='BUY', fiat='COP'):
+    def update_abd(self, adb_number, price, low_limit, asset, trade_type='BUY', fiat='COP', status=3):
 
         data = {
             "advNo": adb_number,
-            "advStatus": 1,
+            "advStatus": status,
             "asset": asset,
             "buyerBtcPositionLimit": '0.01000000',
             "buyerKycLimit": 1,
@@ -385,9 +385,9 @@ class BinanceInfoGetter(ABC):
                         break
                 if final_ad:
                     if final_ad['min_limit'] >= (MIN_LIMIT + (MIN_LIMIT * 0.2)):
-                        return {'price': price, 'min_limit': final_ad['min_limit'] - (final_ad['min_limit'] * 0.2),
+                        return {'price': price, 'limit': final_ad['min_limit'] - (final_ad['min_limit'] * 0.2),
                                 'name': name}
                     else:
-                        return {'price': price + 0.01, 'min_limit': MIN_LIMIT, 'name': name}
+                        return {'price': price + 0.01, 'imit': MIN_LIMIT, 'name': name}
 
-            return {'price': (self.trm - MAX_TRM_DIFFERENCE) * asset_price, 'min_limit': MIN_LIMIT, 'name': None}
+            return {'price': (self.trm - MAX_TRM_DIFFERENCE) * asset_price, 'limit': MIN_LIMIT, 'name': None}

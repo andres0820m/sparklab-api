@@ -73,6 +73,21 @@ class OrderWrapped:
             orders.append(Order(**order))
         return orders
 
+    def get_ads(self):
+        url = MAIN_URL.format('get_ads/')
+        data = self.__send_request(method='GET', url=url)
+        return data.json()
+
+    def get_amount(self):
+        url = MAIN_URL.format('get_amount/')
+        data = self.__send_request(method='GET', url=url)
+        return data.json()[0]['amount']
+
+    def update_amount(self, amount):
+        url = MAIN_URL.format('get_amount/')
+        json_data = {'amount': amount}
+        return self.__send_request(method='POST', url=url, json_data=json_data)
+
     def update_order(self, order: Order):
         binance_id = order.binance_id
         url = MAIN_URL.format('api/v1/orders/' + binance_id + '/')

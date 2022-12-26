@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 from django.contrib.auth import views as auth_views
 from orders.views import OrderViewSet, home, edit_order, save_order, delete_order, approve_order, running_fail, \
     delete_order_running, approve_order_running, CheckAccount, PotentialOrders, save_order_running, edit_order_running, \
-    GetBank, GetAccount, GetDocument, GetUser
+    GetBank, GetAccount, GetDocument, GetUser, GetAds, GetAmount
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -34,6 +34,8 @@ urlpatterns = [
     path('', home),
     path('check_account/', CheckAccount.as_view()),
     path('potential_orders/', PotentialOrders.as_view()),
+    path('get_ads/', GetAds.as_view()),
+    path('get_amount/', GetAmount.as_view()),
     path('get_bank/', GetBank.as_view()),
     path('get_user/', GetUser.as_view()),
     path('get_account/', GetAccount.as_view()),

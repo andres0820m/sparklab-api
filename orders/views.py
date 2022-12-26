@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect
 from rest_framework import viewsets
-from .serialazers import OrderSerializer
+from .serialazers import OrderSerializer, AdsSerializer
 from .forms import OrderForm
 from rest_framework.views import APIView
-from .models import Order, DocumentType, AccountType, Bank
+from .models import Order, DocumentType, AccountType, Bank, Ads, AmountToBuy
 import datetime
 from rest_framework.response import Response
 from rest_framework import status
@@ -16,6 +16,37 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     queryset = Order.objects.all()
     http_method_names = ['get', 'head', 'post', 'put']
+
+
+class AbsVietSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = AdsSerializer
+    queryset = Ads.objects.all()
+    http_method_names = ['get', 'head']
+
+
+class GetAds(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        ads = Ads.objects.filter(user=request.user).filter(is_active=True).values()
+        return Response(ads, status=status.HTTP_200_OK)
+
+
+class GetAmount(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        amount = AmountToBuy.objects.filter(user=request.user).values()
+        return Response(amount, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        actual_amount = AmountToBuy.objects.filter(user=request.user).values()[0]
+        actual_amount = AmountToBuy(**actual_amount)
+        amount = request.data['amount']
+        actual_amount.amount = actual_amount.amount - amount
+        actual_amount.save()
+        return Response(actual_amount.amount, status=status.HTTP_200_OK)
 
 
 @login_required

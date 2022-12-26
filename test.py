@@ -84,7 +84,10 @@ with open('binance.data', 'rb') as enc_file:
         config = Dict2Class(yaml.load(f, Loader=SafeLoader))
     listener = BinanceListener(data=data, name='andres', config=config, order_wrapped=OrderWrapped())
 test_model = BinanceListener2()
-
+orders_wrapped = OrderWrapped()
+print(orders_wrapped.get_ads())
+print(orders_wrapped.get_amount())
+print(orders_wrapped.update_amount(1000000))
 # order_data = listener.get_order_info('20412092467247161344')['data']
 
 # print(order_data)
@@ -92,20 +95,3 @@ test_model = BinanceListener2()
 # orders = OrderWrapped()
 # clear
 # order = orders.get_order('20412092467247161344')
-
-
-while 1:
-    ad = listener.get_asset_price(asset='USDT', amount=90000000, min_limits=ORDER_MIN_LIMIT_LIST,
-                                  banks=['BancolombiaSA'], trade_type='SELL')
-
-    btc_ad = listener.get_non_stable_price(asset='BTC', amount=90000000, banks=['BancolombiaSA'], trade_type='SELL')
-    eth_ad = listener.get_non_stable_price(asset='ETH', amount=90000000, banks=['BancolombiaSA'], trade_type='SELL')
-    bnb_ad = listener.get_non_stable_price(asset='BNB', amount=90000000, banks=['BancolombiaSA'], trade_type='SELL')
-    print(ad)
-
-    print(btc_ad)
-    print(eth_ad)
-    print(bnb_ad)
-    delay = random.randint(15, 20)
-    print("the delay for update is: {}".format(str(delay)))
-    time.sleep(delay)

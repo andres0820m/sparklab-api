@@ -73,12 +73,9 @@ class OrderExecutor:
                                 self.__nequi_pse_bbva.pay(amount=order.amount, number=order.account,
                                                           binance_id=order.binance_id)
                             if order.bank.bank == "bancolombia":
-                                # status = self.order_wrapped.check_account(order.account)
-                                # print(status)
+
                                 self.__bancolombia.login(fingerprint=self.config.bancolombia_fingerprint)
-                                # if status.status_code == 200:
-                                #    order.subscribe = True
-                                #    self.order_wrapped.update_order(order)
+
                                 try:
                                     if not order.subscribe:
                                         self.listener.send_message(binance_id=order.binance_id,
@@ -131,6 +128,7 @@ class OrderExecutor:
                             time.sleep(0.4)
                             self.listener.send_message(binance_id=order.binance_id,
                                                        message=self.config.thanks_message)
+                            self.order_wrapped.update_amount(amount=order.amount)
 
                             if self.config.fix_price:
                                 usdt_price = str(float(order.usdt_price) + 22)
@@ -154,6 +152,7 @@ class OrderExecutor:
                                 self.__telegram_bot.send_message(chat_id=AUT_USER,
                                                                  text="la orden {} no se pudo marcar como paga !!!".format(
                                                                      order.binance_id))
+
 
                         except WrongDataOrAccountAlreadySubscribe:
                             order.fail_retry = 3
