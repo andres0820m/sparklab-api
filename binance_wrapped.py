@@ -28,7 +28,7 @@ BRANCH_LONG = 1
 
 
 class BinanceInfoGetter(ABC):
-    def __init__(self, data, name, config, order_wrapped):
+    def __init__(self, data, name, config, order_wrapped, use_trm=False):
         self.name = config.user_name
         self.trm = None
         self.spot_btc = None
@@ -36,7 +36,8 @@ class BinanceInfoGetter(ABC):
         self.spot_bnb = None
         self.spot_matic = None
         self.spot_doge = None
-        self.__init_trm_value()
+        if use_trm:
+            self.__init_trm_value()
         self.telegram_bot = TelegramBot()
         self.config = config
         self.order_wrapped = order_wrapped
@@ -357,7 +358,7 @@ class BinanceInfoGetter(ABC):
     def get_non_stable_price(self, asset, amount, banks, trade_type, fiat='COP'):
         asset_price = float(self.get_spot_data(asset=asset)['price'])
         if self.trm:
-            for trans_mount in TRANS_AMOUNT:
+            for trans_mount in TRANS_AMOUNT[1:]:
                 print(trans_mount)
                 data = {
                     "page": 1,
@@ -375,19 +376,62 @@ class BinanceInfoGetter(ABC):
                     min_limit = float(ad['adv']['minSingleTransAmount'])
                     quantity = float(ad['adv']['tradableQuantity'])
                     name = ad['advertiser']['nickName']
-                    asset_unit_price = price / asset_price
+                    asset_unit_price = (price / asset_price) + 3
                     quantity_in_usd = quantity * asset_price
                     final_ad = {}
-                    if self.trm - asset_unit_price >= MAX_TRM_DIFFERENCE and quantity_in_usd >= 1200:
+                    if self.trm - asset_unit_price >= MAX_TRM_DIFFERENCE and quantity_in_usd >= 1200 and name not in [
+                        'Amj_crypto', 'AE_Mejia']:
                         final_ad['price'] = price
                         final_ad['name'] = name
                         final_ad['min_limit'] = min_limit
                         break
                 if final_ad:
+                    print(asset, final_ad['price'] / asset_price)
                     if final_ad['min_limit'] >= (MIN_LIMIT + (MIN_LIMIT * 0.2)):
                         return {'price': price, 'limit': final_ad['min_limit'] - (final_ad['min_limit'] * 0.2),
                                 'name': name}
                     else:
-                        return {'price': price + 0.01, 'imit': MIN_LIMIT, 'name': name}
+                        return {'price': price + 0.01, 'limit': MIN_LIMIT, 'name': name}
 
             return {'price': (self.trm - MAX_TRM_DIFFERENCE) * asset_price, 'limit': MIN_LIMIT, 'name': None}
+
+    def get_stable_price(self, asset, amount, banks, trade_type, fiat='COP'):
+        if self.trm:
+            for trans_mount in TRANS_AMOUNT[1:]:
+                print(trans_mount)
+                data = {
+                    "page": 1,
+                    "rows": 10,
+                    "asset": asset,
+                    "tradeType": trade_type,
+                    "fiat": fiat,
+                    "payTypes": banks,
+                    "transAmount": trans_mount,
+                    "publisherType": "merchant"
+                }
+                ads = self.send_signed_request(http_method='POST', url_path=ADS_URL, data=data)['data']
+                for ad in ads:
+                    price = float(ad['adv']['price'])
+                    min_limit = float(ad['adv']['minSingleTransAmount'])
+                    quantity = float(ad['adv']['tradableQuantity'])
+                    name = ad['advertiser']['nickName']
+                    asset_unit_price = price
+                    quantity_in_usd = quantity
+                    final_ad = {}
+                    if name == 'AE_Mejia':
+                        return {'price': price, 'limit': min_limit, 'name': name}
+                    if self.trm - asset_unit_price >= MAX_TRM_DIFFERENCE and quantity_in_usd >= 1200 and name not in [
+                        'Amj_crypto', 'AE_Mejia']:
+                        final_ad['price'] = price
+                        final_ad['name'] = name
+                        final_ad['min_limit'] = min_limit
+                        break
+                if final_ad:
+                    print(asset, final_ad['price'])
+                    if final_ad['min_limit'] >= (MIN_LIMIT + (MIN_LIMIT * 0.2)):
+                        return {'price': price, 'limit': final_ad['min_limit'] - (final_ad['min_limit'] * 0.2),
+                                'name': name}
+                    else:
+                        return {'price': price + 0.01, 'limit': MIN_LIMIT, 'name': name}
+
+            return {'price': self.trm - MAX_TRM_DIFFERENCE, 'limit': MIN_LIMIT, 'name': None}
