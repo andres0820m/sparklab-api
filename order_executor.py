@@ -133,7 +133,7 @@ class OrderExecutor:
                                                        message=self.config.thanks_message)
 
                             if self.config.fix_price:
-                                usdt_price = str(float(order.usdt_price) + 22)
+                                usdt_price = str(float(order.usdt_price) + float(config.amount_to_fix))
                             else:
                                 usdt_price = order.usdt_price
                             message = "Se acaban de comprar {} pesos colombianos, a un precio de {}".format(

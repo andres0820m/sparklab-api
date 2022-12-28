@@ -116,7 +116,8 @@ class Bancolombia:
         self.__controller.click_on_text('Inscribir cuentas')
         self.__controller.wait_for_text('datos del producto', timeout=10)
         self.__controller.click_coordinate((242, 350))
-        self.__controller.wait_for_text('Bancolombia', timeout=15, use_canny=True)
+        for _ in range(4):
+            self.__controller.wait_for_text('Bancolombia', timeout=15, use_canny=True)
         account_text = "Ingresa el numero del producto"
         if is_nequi:
             account_text = 'Ingresa el numero'
