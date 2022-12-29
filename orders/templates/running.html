@@ -3,38 +3,57 @@
 {% block title %} ordenes en proceso {% endblock %}
 
 {% block body %}
+<h1>ORDERS</h1>
+<div class="container" style="overflow-x:auto;">
+<table style="table-layout: auto;" class="table table-striped table-hover">
+    <thead class="bn-table-thead">
+    <tr>
+        <th class="bn-table-cell">
+            <div data-bn-type="text">Binance id</div>
+             <div data-bn-type="text">amount</div>
+            <div data-bn-type="text">Name</div>
+            <div data-bn-type="text">is nequi</div>
 
-        <h1>ORDERS</h1>
-            <table class="table table-striped table-hover">
-                <thead>
-                <tr>
-                    <th>Binance id</th>
-                    <th>name</th>
-                    <th>account</th>
-                    <th>document</th>
-                    <th>document type</th>
-                    <th>account type</th>
-                    <th>is nequi</th>
-                    <th>status</th>
-                    <th colspan="3">Opciones</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for c in orders %}
-                <tr>
-                    <td>{{c.binance_id}}</td>
-                    <td>{{c.name}}</td>
-                    <td>{{c.account}}</td>
-                    <td>{{c.document_number}}</td>
-                    <td>{{c.document_type}}</td>
-                    <td>{{c.account_type}}</td>
-                    <td>{{c.is_contact}}</td>
-                    <td>{{c.status}}</td>
-                    <td><a href="edit_order/{{c.binance_id}}" class="btn btn-info">Editar</a></td>
-                    <td><a href="delete_order/{{c.binance_id}}" class="btn btn-danger btnEliminacion">Eliminar</a></td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+        </th>
+        <th class="bn-table-cell">
+            <div data-bn-type="text">account</div>
+            <div data-bn-type="text">document</div>
+            <div data-bn-type="text">document type</div>
+            <div data-bn-type="text">account type</div>
+        </th>
+        <th colspan="3">Opciones</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for c in orders %}
+    <tr>
+        <td class="bn-table-cell">
+        <div>
+            <span>{{c.binance_id}}</span>
+            <div>{{c.amount}}</div>
+            <div>{{c.name}}</div>
+            <div>{{c.is_contact}}</div>
+        </div>
+            </td>
+         <td class="bn-table-cell">
+        <div>
+            <span>{{c.account}}</span>
+            <div>{{c.document_number}}</div>
+            <div>{{c.document_type}}</div>
+            <div>{{c.account_type}}</div>
+        </div>
+        </td>
+        <td class="bn-table-cell">
+        <div>
+            <div>{{c.status}}</div>
+            <div><a href="edit_order/{{c.binance_id}}" class="btn btn-info">Editar</a></div>
+            <div><a href="delete_order/{{c.binance_id}}" class="btn btn-danger btnEliminacion">Eliminar</a></div>
+        </div>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
 
 {% endblock %}
