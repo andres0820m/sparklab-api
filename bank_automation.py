@@ -1,6 +1,8 @@
 import time
 import re
 from enum import Enum
+import random
+import urllib.request
 import secrets
 from datetime import datetime
 from android_controller import AndroidController
@@ -701,3 +703,181 @@ class NequiDavivienda:
             self.__controller.save_screen(binance_id)
         except TimeoutError:
             raise TransferFailAtTheEnd
+
+
+class BancolombiaPymeWrapped:
+    @staticmethod
+    def gen_random_hex_string(size):
+        return ''.join(random.choices('0123456789abcdef', k=size))
+
+    @staticmethod
+    def get_time_for_login():
+        return datetime.now().strftime("%Y-%m-%d %H:%M:%S:%f")[0:-3]
+
+    @staticmethod
+    def get_time_for_transfer():
+        return datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+
+    @staticmethod
+    def get_transfer_id():
+        return str(int(datetime.timestamp(datetime.now()) * 1000))[1:]
+
+    def __init__(self, client_document, business_document, android_controller: AndroidController):
+        self.client_document = client_document
+        self.business_document = business_document
+        self.message_id = self.gen_random_hex_string(16)
+        self.external_ip = urllib.request.urlopen('https://ident.me').read().decode('utf8')
+        self.session_tracker = self.gen_random_hex_string(16)
+        self.devide_id = self.gen_random_hex_string(16)
+        self.__controller = android_controller
+
+    LOGIN_HEADER = {
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Language': 'en-US,en;q=0.9,es;q=0.8',
+        'Connection': 'keep-alive',
+        'Content-Type': 'Application/json',
+        'Origin': 'https://sucursalvirtualpyme.bancolombia.com',
+        'Referer': 'https://sucursalvirtualpyme.bancolombia.com/',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-origin',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+        'app-version': '1',
+        'application-id': 'AW1180',
+        'authorization': '',
+        'channel': 'NDB',
+        'device-id': '',
+        'ip': "",
+        'message-id': '',
+        'platform-type': 'web',
+        'request-timestamp': '',
+        'sec-ch-ua': '"Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"',
+        'session-tracker': '',
+        'validate-captcha': 'false'}
+
+    CHECK_ACCOUNT_HEADERS = {
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Language': 'en-US,en;q=0.9,es;q=0.8',
+        'Authorization': '',
+        'Connection': 'keep-alive',
+        'Content-Type': 'Application/json',
+        'Origin': 'https://sucursalvirtualpyme.bancolombia.com',
+        'Referer': 'https://sucursalvirtualpyme.bancolombia.com/',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-origin',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+        'sec-ch-ua': '"Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"'}
+    TRANSFER_HEADERS = {
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Language': 'en-US,en;q=0.9,es;q=0.8',
+        'Authorization': '',
+        'Connection': 'keep-alive',
+        'Content-Type': 'Application/json',
+        'Origin': 'https://sucursalvirtualpyme.bancolombia.com',
+        'Referer': 'https://sucursalvirtualpyme.bancolombia.com/',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-origin',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+        'sec-ch-ua': '"Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"'}
+
+    def login(self, login_key):
+        self.push_id = self.gen_random_hex_string(16)
+        self.detect_id = self.gen_random_hex_string(16)
+        data = {"clientInfo": {"clientDocument": self.client_document, "clientDocumentType": "CC",
+                               "businessDocument": self.business_document,
+                               "businessDocumentType": "NT"},
+                "transactionInfo": {"type": "authentication", "consumer": "SVN"},
+                "additionalInfo": {"pushId": self.push_id,
+                                   "detectId": self.detect_id, "credentials": [{"key": "pinblock",
+                                                                                "value": login_key}],
+                                   "authenticationType": "firstkey"}}
+        self.LOGIN_HEADER['ip'] = self.external_ip
+        self.LOGIN_HEADER['message-id'] = '38023512-7cc9-4b98-bb73-ef35dc05e40b'
+        self.LOGIN_HEADER['session-tracker'] = '38023512-7cc9-4b98-bb73-ef35dc05e40b'
+        self.LOGIN_HEADER['request-timestamp'] = self.get_time_for_login()
+        self.LOGIN_HEADER['device-id'] = '38023512-7cc9-4b98-bb73-ef35dc05e40b'
+        response = requests.post(
+            'https://sucursalvirtualpyme.bancolombia.com/pyme-bancolombia/api/v1/security-filters/authentication-ndb/authenticate',
+            headers=self.LOGIN_HEADER,
+            json=data)
+        if response.status_code == 200:
+            self.token = response.json()['sessionInfo']['accessToken']
+            return True
+        else:
+            return response
+
+    def check_account(self, name, document, account):
+
+        data = {"data": [
+            {"header": {"type": "verifyAccount", "id": "0103244618958611"}, "consumerId": "SVN", "channelId": "NDB",
+             "clientIp": "10.5.31.115", "device": "Web",
+             "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
+             "transactionDate": "2022/12/30 16:16:51", "accountType": "Cuenta ahorros", "accountNumber": account,
+             "verifyIdType": "CC", "verifyIdNumber": document, "businessDocumentType": "NT",
+             "businessDocument": self.business_document, "clientDocument": self.client_document,
+             "clientDocumentType": "CC"}]}
+
+        self.CHECK_ACCOUNT_HEADERS['Authorization'] = 'Bearer {}'.format(self.token)
+
+        response = requests.post(
+            'https://sucursalvirtualpyme.bancolombia.com/pyme-bancolombia/edge-service/verify-account',
+            headers=self.CHECK_ACCOUNT_HEADERS,
+            json=data)
+        if response.status_code == 200:
+            return response.json()
+        elif response.status_code == 424:
+            return False
+
+    def __get_dynamic_key(self):
+        self.__controller.find_text('.')
+        all_text = self.__controller.get_all_text()
+        for text in all_text:
+            if len(str_only_numbers(text)) == 6:
+                return text
+
+    def transfer(self):
+        key = self.__get_dynamic_key()
+        print(key)
+        data = {"data": [
+            {"header": {"type": "saving-account-transfer", "id": "0103244618958661"}, "consumerId": "SVN",
+             "channelId": "NDB",
+             "clientIp": "10.5.31.115", "device": "Web",
+             "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
+             "transactionDate": "2022/12/30 16:17:41", "clientDocumentType": "CC", "clientDocument": "1032446189",
+             "businessDocumentType": "NT", "businessDocument": "901658576",
+             "targetClientInfo": {"targetClientDocumentType": "", "targetClientDocument": ""},
+             "sourceAccountInfo": {"sourceProductType": "Cuenta ahorros", "sourceProductNumber": "04000005253"},
+             "targetProductInfo": {"targetProductType": "Cuenta ahorros", "targetProductNumber": "91200786853"},
+             "transferInfo": {"trackingNumber": self.get_transfer_id(), "transferValue": "100", "reference1": "",
+                              "reference2": "",
+                              "reference3": "", "transactionCodeDebit": "8561", "transactionCodeCredit": "8567",
+                              "currencyCode": "COP", "movementDescriptionDebit": "Traslado Cta Suc Virtual Pyme",
+                              "movementDescriptionCredit": "Traslado Cta Suc Virtual Pyme", "deviceCode": "SVN"},
+             "officeInfo": {"entryOfficeCreditTransaction": "", "entryOfficeDebitTransaction": ""},
+             "sessionId": self.detect_id, "authenticateTransaction": {"authenticationtType": "softoken",
+                                                                      "authenticationValue": [
+                                                                          {"key": "softoken",
+                                                                           "value": key}]},
+             "deviceId2": ""}]}
+        self.TRANSFER_HEADERS['Authorization'] = 'Bearer {}'.format(self.token)
+        response = requests.post(
+            'https://sucursalvirtualpyme.bancolombia.com/pyme-bancolombia/edge-service/transfer',
+            headers=self.TRANSFER_HEADERS,
+            json=data)
+        return response
+
+
+login_key = "126285836F7F84103B3D31A13EBFF3E31CD99F60989F95E4ED17F9F8D4FA341B613FB9BE8F085B4271CD0BAFED7345BE68DEC5F9A79C6FB7F57C6BDF24AF32B88F9233E9F4BFF94D9A3CA552F4B5DA96C437A1AE9B71A202802E86FDDEF8CEB530B9C32473B3F44585CE9600FACE39F69372BDF09D134B4E9778A9FF29DEA7B8DA92F81730864C84C6C35F37435FC9175013B69D1237D586072EB6191C3C37512E87A888888474C7E548B8DBB9A76E0A9EC8C030A7D763CE05C54DEA63ECFFF9EFC54C93E32DBF61B40543BCEF009F44E17B2854F09D0673280F86354A843AB94E37FB534295F45ACFB65CFFC65BA9FE1A26509238202756FE66688175193A80"
+
+bancolombia_pyme = BancolombiaPymeWrapped(client_document='1032446189', business_document='901658576',
+                                          android_controller=AndroidController(dark_mode=False))
+bancolombia_pyme.login(login_key=login_key)
+print(bancolombia_pyme.transfer().json())

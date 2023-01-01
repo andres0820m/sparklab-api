@@ -93,7 +93,6 @@ class AndroidController:
             self.__templates[name] = ImgTemplate(TEMPLATES_PATH / png_filename)
 
     def __take_screenshot(self, show=False):
-
         png = np.asarray(self.__device.screencap())
         bgr = cv2.imdecode(png, cv2.IMREAD_COLOR)
         self.__screenshot = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
@@ -381,8 +380,8 @@ class AndroidController:
         gry = cv2.cvtColor(ss, cv2.COLOR_BGR2GRAY)
         gry = cv2.Canny(gry, 100, 200)
         txt = pytesseract.image_to_string(gry, config='outputbase digits')
-        print("".join([t for t in txt if t != '!']).strip())
-        return "".join([t for t in txt if t != '!']).strip()
+        #print("".join([t for t in txt if t != '!']).strip())
+        return txt #"".join([t for t in txt if t != '!']).strip()
 
     def click_on_text(self,
                       text: str,
