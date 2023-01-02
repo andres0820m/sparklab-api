@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.decorators import login_required
 import locale
 
-locale.setlocale(locale.LC_ALL, 'en_CA.UTF-8')
+locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 TRUE_OR_FALSE_MAP = {'on': True, 'off': False}
 
 
