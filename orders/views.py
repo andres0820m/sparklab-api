@@ -65,7 +65,7 @@ def home(request):
 
 @login_required
 def ads(request):
-    ads = Ads.objects.all()
+    ads = Ads.objects.filter(user=request.user)
     return render(request, "ads.html", {"ads": ads})
 
 
