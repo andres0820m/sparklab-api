@@ -43,3 +43,24 @@ class Order(models.Model):
 
     def __str__(self):
         return " {} -- {}".format(self.binance_id, self.status)
+
+
+class Ads(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_active = models.BooleanField()
+    use_min_limit = models.BooleanField()
+    min_limit = models.FloatField()
+    ad_id = models.CharField(max_length=500, blank=False, null=False)
+    asset = models.CharField(max_length=500, blank=False, null=False)
+
+    def __str__(self):
+        return " {} -- {}".format(self.user, self.asset)
+
+
+class AmountToBuy(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    is_active = models.BooleanField()
+    amount = models.FloatField(null=False)
+
+    def __str__(self):
+        return " {} -- {}".format(self.user, self.amount)

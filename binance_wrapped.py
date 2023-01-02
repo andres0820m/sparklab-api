@@ -11,21 +11,33 @@ import requests
 import websocket
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
-
+from constants import HTML_HEADERS, YAHOO_TRM_PRICE_URL, MAX_TRM_DIFFERENCE, EXCLUDE_USERS, SPOT_PRICE_URL, SYMBOLS, \
+    STABLE_ASSETS, TRANS_AMOUNT, MIN_LIMIT
 from Errors import OrderAsPaidError
 from constants import API_URL
 from telegram_wrapped import TelegramBot
-from tools import str_only_alphanumeric, str_only_numbers
+from tools import str_only_numbers
+from utils import send_request
 
 CREDENTIALS_URL = '/sapi/v1/c2c/chat/retrieveChatCredential'
 ORDER_PAID_URL = '/sapi/v1/c2c/orderMatch/markOrderAsPaid'
 ORDER_DETAILS_URL = '/sapi/v1/c2c/orderMatch/getUserOrderDetail'
 DRIVE_PARENT_FOLDER = '1T3kw9-qer4o_zhlCOFt4-_gLaxxv8xh7'
+ADS_URL = '/sapi/v1/c2c/ads/search'
+BRANCH_LONG = 1
 
 
 class BinanceInfoGetter(ABC):
-    def __init__(self, data, name, config, order_wrapped):
-        self.name = name
+    def __init__(self, data, name, config, order_wrapped, use_trm=False):
+        self.name = config.user_name
+        self.trm = None
+        self.spot_btc = None
+        self.spot_eth = None
+        self.spot_bnb = None
+        self.spot_matic = None
+        self.spot_doge = None
+        if use_trm:
+            self.__init_trm_value()
         self.telegram_bot = TelegramBot()
         self.config = config
         self.order_wrapped = order_wrapped
@@ -80,31 +92,36 @@ class BinanceInfoGetter(ABC):
         }.get(http_method, 'GET')
 
     def send_signed_request(self, http_method, url_path, payload={}, data=None):
-        query_string = urlencode(payload)
-        # replace single quote to double quote
-        query_string = query_string.replace('%27', '%22')
-        if query_string:
-            query_string = "{}&timestamp={}".format(query_string, self.__get_timestamp())
-        else:
-            query_string = 'timestamp={}'.format(self.__get_timestamp())
+        retry = 3
+        while retry != 0:
+            query_string = urlencode(payload)
+            # replace single quote to double quote
+            query_string = query_string.replace('%27', '%22')
+            if query_string:
+                query_string = "{}&timestamp={}".format(query_string, self.__get_timestamp())
+            else:
+                query_string = 'timestamp={}'.format(self.__get_timestamp())
 
-        url = API_URL + url_path + '?' + query_string + '&signature=' + self.__hashing(query_string)
-        print(url)
-        if data:
-            params = {'url': url, 'params': {}, 'json': data}
-        else:
-            params = {'url': url, 'params': {}}
-        response = self.__dispatch_request(http_method)(**params)
-        return response.json()
+            url = API_URL + url_path + '?' + query_string + '&signature=' + self.__hashing(query_string)
+            print(url)
+            if data:
+                params = {'url': url, 'params': {}, 'json': data}
+            else:
+                params = {'url': url, 'params': {}}
+            response = self.__dispatch_request(http_method)(**params)
+            if response.status_code >= 201:
+                retry -= 1
+            else:
+                return response.json()
 
     # used for sending public data request
-    def send_public_request(self, url_path, payload={}):
+    def send_public_request(self, url_path, method='GET', payload={}, ):
         query_string = urlencode(payload, True)
         url = API_URL + url_path
         if query_string:
             url = url + '?' + query_string
         print("{}".format(url))
-        response = self.__dispatch_request('GET')(url=url)
+        response = self.__dispatch_request(method)(url=url)
         return response.json()
 
     def get_data_df(self, url, init_date, last_date):
@@ -231,3 +248,198 @@ class BinanceInfoGetter(ABC):
             if order[key] == '**********' and key not in ['user', ]:
                 order['status'] = 'waiting_for_review'
         return order
+
+    def get_trm_value(self):
+        while 1:
+            self.trm = self.get_yahoo_data()
+            print(self.trm)
+            time.sleep(10)
+
+    def __init_trm_value(self):
+        threading.Thread(target=self.get_trm_value).start()
+
+    @staticmethod
+    def get_yahoo_data():
+        data = send_request(method='GET', headers=HTML_HEADERS, url=YAHOO_TRM_PRICE_URL)
+        try:
+            return float(data.json()['chart']['result'][0]['meta']['regularMarketPrice'])
+        except KeyError:
+            return float(data.json()['chart']['result'][0]['meta']['previousClose'])
+
+    def get_asset_price(self, asset, amount, min_limits, banks, trade_type, fiat='COP'):
+        if self.trm:
+            if amount > 40000000:
+                trans_mount = 5000000
+            elif 20000000 <= amount <= 40000000:
+                trans_mount = 3000000
+            else:
+                trans_mount = 2000000
+
+            print(trans_mount)
+            data = {
+                "page": 1,
+                "rows": 10,
+                "asset": asset,
+                "tradeType": trade_type,
+                "fiat": fiat,
+                "payTypes": banks,
+                "transAmount": trans_mount,
+                "publisherType": "merchant"
+            }
+            ads = self.send_signed_request(http_method='POST', url_path=ADS_URL, data=data)['data']
+            ads_fits_trm = []
+            for ad in ads:
+                price = float(ad['adv']['price'])
+                min_limit = float(ad['adv']['minSingleTransAmount'])
+                quantity = float(ad['adv']['tradableQuantity'])
+                name = ad['advertiser']['nickName']
+                if self.trm - price >= MAX_TRM_DIFFERENCE and (
+                        quantity >= 2000) and name not in EXCLUDE_USERS:
+                    ads_fits_trm.append({'price': price, 'name': name, 'limit': min_limit})
+            number_of_ads = len(ads_fits_trm)
+            if not ads_fits_trm:
+                return {'price': self.trm - MAX_TRM_DIFFERENCE, 'limit': 700000}
+
+            best_ad = ads_fits_trm[0]
+            best_post = 0
+            for ad_position, ad in enumerate(ads_fits_trm):
+                if abs(best_post - ad_position) > BRANCH_LONG:
+                    break
+                if ad_position < number_of_ads - 1:
+                    price_diff = 5
+                    if best_ad['price'] - ad['price'] >= price_diff:
+                        best_ad = ad
+                        best_post = ad_position
+                    elif (best_ad['limit'] - ad['limit'] / best_ad['limit']) <= 0.2 and ad['limit'] < best_ad[
+                        'limit']:
+                        best_ad = ad
+                        best_post = ad_position
+            if best_ad['name'] not in ['AE_Mejia', ]:
+                if (trans_mount - best_ad['limit']) / trans_mount < 0.5:
+                    return {'price': best_ad['price'], 'limit': best_ad['limit'] - (best_ad['limit'] * 0.1)}
+                else:
+                    return {'price': best_ad['price'] + 0.01, 'limit': best_ad['limit']}
+            else:
+                return {'price': best_ad['price'], 'limit': best_ad['limit']}
+
+    def get_ad_by_number(self, adb_number):
+        url = '/sapi/v1/c2c/ads/getDetailByNo'
+        return self.send_signed_request(http_method='POST', url_path=url, payload={'adsNo': adb_number})
+
+    def update_abd(self, adb_number, price, low_limit, asset, trade_type='BUY', fiat='COP', status=3):
+
+        data = {
+            "advNo": adb_number,
+            "advStatus": status,
+            "asset": asset,
+            "buyerBtcPositionLimit": '0.01000000',
+            "buyerKycLimit": 1,
+            "buyerRegDaysLimit": -1,
+            "fiatUnit": fiat,
+            "maxSingleTransAmount": '200000000',
+            "minSingleTransAmount": str(int(low_limit)),
+            "payTimeLimit": 360,
+            "price": str(price),
+            "priceType": 1,
+            'rateFloatingRatio': '0.00000000',
+            "tradeType": trade_type,
+        }
+
+        url = '/sapi/v1/c2c/ads/update'
+        self.send_signed_request(http_method='POST', url_path=url, data=data)
+
+    @staticmethod
+    def get_spot_data(asset):
+        url = SPOT_PRICE_URL.format(SYMBOLS[asset])
+        print(url)
+        response = send_request(method='GET', url=url, use_data=False)
+        return response.json()
+
+    def get_non_stable_price(self, asset, amount, banks, trade_type, fiat='COP'):
+        asset_price = float(self.get_spot_data(asset=asset)['price'])
+        if self.trm:
+            for trans_mount in TRANS_AMOUNT[1:]:
+                print(trans_mount)
+                data = {
+                    "page": 1,
+                    "rows": 10,
+                    "asset": asset,
+                    "tradeType": trade_type,
+                    "fiat": fiat,
+                    "payTypes": banks,
+                    "transAmount": trans_mount,
+                    "publisherType": "merchant"
+                }
+                ads = self.send_signed_request(http_method='POST', url_path=ADS_URL, data=data)['data']
+                for ad in ads:
+                    price = float(ad['adv']['price'])
+                    min_limit = float(ad['adv']['minSingleTransAmount'])
+                    quantity = float(ad['adv']['tradableQuantity'])
+                    name = ad['advertiser']['nickName']
+                    asset_unit_price = (price / asset_price) + 3
+                    quantity_in_usd = quantity * asset_price
+                    final_ad = {}
+                    if self.trm - asset_unit_price >= MAX_TRM_DIFFERENCE and quantity_in_usd >= 1200 and name not in [
+                        'Amj_crypto', 'AE_Mejia']:
+                        final_ad['price'] = price
+                        final_ad['name'] = name
+                        final_ad['min_limit'] = min_limit
+                        break
+                if final_ad:
+                    print(asset, final_ad['price'] / asset_price)
+                    if final_ad['min_limit'] >= (MIN_LIMIT + (MIN_LIMIT * 0.2)):
+                        return {'price': price, 'limit': final_ad['min_limit'] - (final_ad['min_limit'] * 0.2),
+                                'name': name}
+                    else:
+                        return {'price': price + 0.01, 'limit': MIN_LIMIT, 'name': name}
+
+            return {'price': (self.trm - MAX_TRM_DIFFERENCE) * asset_price, 'limit': MIN_LIMIT, 'name': None}
+
+    def get_stable_price(self, asset, ad_config, banks, trade_type, fiat='COP'):
+        use_limit = ad_config['use_min_limit']
+        min_ad_limit = float(ad_config['min_limit'])
+
+        if self.trm:
+            for trans_mount in TRANS_AMOUNT:
+                print(trans_mount)
+                data = {
+                    "page": 1,
+                    "rows": 10,
+                    "asset": asset,
+                    "tradeType": trade_type,
+                    "fiat": fiat,
+                    "payTypes": banks,
+                    "transAmount": trans_mount,
+                    "publisherType": "merchant"
+                }
+                ads = self.send_signed_request(http_method='POST', url_path=ADS_URL, data=data)['data']
+                for ad in ads:
+                    price = float(ad['adv']['price'])
+                    min_limit = float(ad['adv']['minSingleTransAmount'])
+                    quantity = float(ad['adv']['tradableQuantity'])
+                    name = ad['advertiser']['nickName']
+                    asset_unit_price = price
+                    quantity_in_usd = quantity
+                    final_ad = {}
+                    if name == 'AE_Mejia':
+                        return {'price': price, 'limit': min_limit, 'name': name}
+                    if self.trm - asset_unit_price >= MAX_TRM_DIFFERENCE and quantity_in_usd >= 2300 and name not in [
+                        'Amj_crypto', 'AE_Mejia']:
+                        final_ad['price'] = price
+                        final_ad['name'] = name
+                        final_ad['min_limit'] = min_limit
+                        break
+                if final_ad:
+                    print(asset, final_ad['price'])
+                    if final_ad['min_limit'] >= (MIN_LIMIT + (MIN_LIMIT * 0.2)):
+                        if not use_limit:
+                            final_price = final_ad['min_limit'] - (final_ad['min_limit'] * 0.2)
+                        elif float(final_ad['min_limit']) <= min_limit:
+                            final_price = MIN_LIMIT
+                        else:
+                            final_price = min_limit
+                        return {'price': price, 'limit': final_price,'name': name}
+                    else:
+                        return {'price': price + 0.01, 'limit': MIN_LIMIT, 'name': name}
+
+            return {'price': self.trm - MAX_TRM_DIFFERENCE, 'limit': MIN_LIMIT, 'name': None}

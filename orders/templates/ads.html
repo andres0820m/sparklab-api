@@ -1,0 +1,34 @@
+{% extends "./base.html" %}
+
+{% block title %} binance ads {% endblock %}
+
+{% block body %}
+<h1>ADS</h1>
+<div class="container" style="overflow-x:auto;">
+    <table style="table-layout: auto;" class="table table-striped table-hover">
+        <tbody>
+        {% for c in ads %}
+        <tr>
+            <td class="bn-table-cell">
+                <div>
+                    <span class="border-top"><span class="font-italic small">ad id:</span> {{c.ad_id}}</span>
+                    <div class="border-top"> <span class="font-italic small">is active:</span> {{c.is_active}}</div>
+                    <div class="border-top"> <span class="font-italic small">use min value:</span> {{c.use_min_limit}}</div>
+                    <div class="border-top"> <span class="font-italic small">asset:</span> {{c.asset}}</div>
+                    <div class="border-top"> <span class="font-italic small">min value:</span> {{c.min_limit}}</div>
+                </div>
+            </td>
+            <td class="bn-table-cell">
+                <div>
+                    <div><a href="edit/{{c.ad_id}}" class="btn btn-info btn-block">Editar</a></div>
+                    <div><a href="delete_order/{{c.ad_id}}" class="btn btn-danger btnEliminacion btn-block">Eliminar</a>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

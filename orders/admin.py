@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Order, AccountType, DocumentType, Bank
+from .models import Order, AccountType, DocumentType, Bank, Ads, AmountToBuy
 
 
 # Register your models here.
@@ -20,3 +20,5 @@ admin.site.register(AccountType)
 admin.site.register(DocumentType)
 admin.site.register(Order, AdminOrder)
 admin.site.register(Bank)
+admin.site.register(Ads)
+admin.site.register(AmountToBuy)
