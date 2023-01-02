@@ -395,9 +395,12 @@ class BinanceInfoGetter(ABC):
 
             return {'price': (self.trm - MAX_TRM_DIFFERENCE) * asset_price, 'limit': MIN_LIMIT, 'name': None}
 
-    def get_stable_price(self, asset, amount, banks, trade_type, fiat='COP'):
+    def get_stable_price(self, asset, ad_config, banks, trade_type, fiat='COP'):
+        use_limit = ad_config['use_min_limit']
+        min_ad_limit = float(ad_config['min_limit'])
+
         if self.trm:
-            for trans_mount in TRANS_AMOUNT[1:]:
+            for trans_mount in TRANS_AMOUNT:
                 print(trans_mount)
                 data = {
                     "page": 1,
@@ -420,7 +423,7 @@ class BinanceInfoGetter(ABC):
                     final_ad = {}
                     if name == 'AE_Mejia':
                         return {'price': price, 'limit': min_limit, 'name': name}
-                    if self.trm - asset_unit_price >= MAX_TRM_DIFFERENCE and quantity_in_usd >= 1200 and name not in [
+                    if self.trm - asset_unit_price >= MAX_TRM_DIFFERENCE and quantity_in_usd >= 2300 and name not in [
                         'Amj_crypto', 'AE_Mejia']:
                         final_ad['price'] = price
                         final_ad['name'] = name
@@ -429,8 +432,13 @@ class BinanceInfoGetter(ABC):
                 if final_ad:
                     print(asset, final_ad['price'])
                     if final_ad['min_limit'] >= (MIN_LIMIT + (MIN_LIMIT * 0.2)):
-                        return {'price': price, 'limit': final_ad['min_limit'] - (final_ad['min_limit'] * 0.2),
-                                'name': name}
+                        if not use_limit:
+                            final_price = final_ad['min_limit'] - (final_ad['min_limit'] * 0.2)
+                        elif float(final_ad['min_limit']) <= min_limit:
+                            final_price = MIN_LIMIT
+                        else:
+                            final_price = min_limit
+                        return {'price': price, 'limit': final_price,'name': name}
                     else:
                         return {'price': price + 0.01, 'limit': MIN_LIMIT, 'name': name}
 

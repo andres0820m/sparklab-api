@@ -48,6 +48,8 @@ class Order(models.Model):
 class Ads(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     is_active = models.BooleanField()
+    use_min_limit = models.BooleanField()
+    min_limit = models.FloatField()
     ad_id = models.CharField(max_length=500, blank=False, null=False)
     asset = models.CharField(max_length=500, blank=False, null=False)
 

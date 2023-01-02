@@ -7,7 +7,7 @@ from yaml.loader import SafeLoader
 from orders_wrapped import OrderWrapped
 from utils import Dict2Class
 from binance_listener import BinanceListener
-from constants import CONFIG_PATH, ORDER_MIN_LIMIT_LIST, STABLE_ASSETS
+from constants import CONFIG_PATH, STABLE_ASSETS
 from cryptography.fernet import Fernet
 
 fernet = Fernet('L_V5YxcprMwMKyKtZt9ZGAe_iB2FfXPBYDcAHcpG190=')
@@ -34,8 +34,8 @@ while 1:
         for ad in ads:
             asset = ad['asset']
             if asset in STABLE_ASSETS:
-                result = listener.get_stable_price(asset=asset, amount=amount,
-                                                  banks=['BancolombiaSA'], trade_type='SELL')
+                result = listener.get_stable_price(asset=asset, ad_config=ad,
+                                                   banks=['BancolombiaSA'], trade_type='SELL')
             else:
                 result = listener.get_non_stable_price(asset=asset, amount=amount, banks=['BancolombiaSA'],
                                                        trade_type='SELL')
@@ -62,3 +62,4 @@ while 1:
 
     except:
         print("cant get prices")
+        time.sleep(5)

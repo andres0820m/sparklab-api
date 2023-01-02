@@ -3,57 +3,65 @@
 {% block title %} Gestión de ordenes {% endblock %}
 
 {% block body %}
-
+{% load crispy_forms_tags %}
 <h1>ORDERS</h1>
 <div class="container" style="overflow-x:auto;">
-<table style="table-layout: auto;" class="table table-striped table-hover">
-    <thead class="bn-table-thead">
-    <tr>
-        <th class="bn-table-cell">
-            <div class="font-italic small">Binance id</div>
-             <div class="font-italic small">amount</div>
-            <div class="font-italic small">Name</div>
-            <div class="font-italic small">is nequi</div>
+    <div><h6 class="font-italic"> Amount for buying: {{amount}}</h6></div>
+     <form action="/edit_amount/" method="POST">{% csrf_token %}
+                    {{amount_form |crispy}}
+                    <button type="submit" class="btn btn-success btn-block text-white">change</button>
+                </form>
+    <table style="table-layout: auto;" class="table table-striped table-hover">
+        <thead class="bn-table-thead">
+        <tr>
+            <th class="bn-table-cell">
+                <div class="font-italic small">Binance id</div>
+                <div class="font-italic small">amount</div>
+                <div class="font-italic small">Name</div>
+                <div class="font-italic small">is nequi</div>
 
-        </th>
-        <th class="bn-table-cell">
-            <div class="font-italic small">account</div>
-            <div class="font-italic small">document</div>
-            <div class="font-italic small">document type</div>
-            <div class="font-italic small">account type</div>
-        </th>
-        <th colspan="3" class="font-italic small">Opciones</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for c in orders %}
-    <tr>
-        <td class="bn-table-cell">
-        <div>
-            <span class="border-top">{{c.binance_id}}</span>
-            <div class="border-top">{{c.amount}}</div>
-            <div class="border-top">{{c.name}}</div>
-            <div class="border-top">{{c.is_contact}}</div>
-        </div>
+            </th>
+            <th class="bn-table-cell">
+                <div class="font-italic small">account</div>
+                <div class="font-italic small">document</div>
+                <div class="font-italic small">document type</div>
+                <div class="font-italic small">account type</div>
+            </th>
+            <th colspan="3" class="font-italic small">Opciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for c in orders %}
+        <tr>
+            <td class="bn-table-cell">
+                <div>
+                    <span class="border-top">{{c.binance_id}}</span>
+                    <div class="border-top">{{c.amount}}</div>
+                    <div class="border-top">{{c.name}}</div>
+                    <div class="border-top">{{c.is_contact}}</div>
+                </div>
             </td>
-         <td class="bn-table-cell">
-        <div>
-            <span class="border-top">{{c.account}}</span>
-            <div class="border-top">{{c.document_number}}</div>
-            <div class="border-top">{{c.document_type}}</div>
-            <div class="border-top">{{c.account_type}}</div>
-        </div>
-        </td>
-        <td class="bn-table-cell">
-        <div>
-            <div class="border-top" ><a href="edit_order/{{c.binance_id}}" class="btn btn-info btn-block">Editar</a></div>
-            <div class="border-top"><a href="delete_order/{{c.binance_id}}" class="btn btn-danger btnEliminacion btn-block">Eliminar</a></div>
-            <div class="border-top"><a href="approve_order/{{c.binance_id}}" class="btn btn-success btnEliminacion btn-block">Aprovar</a></div>
-        </div>
-        </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+            <td class="bn-table-cell">
+                <div>
+                    <span class="border-top">{{c.account}}</span>
+                    <div class="border-top">{{c.document_number}}</div>
+                    <div class="border-top">{{c.document_type}}</div>
+                    <div class="border-top">{{c.account_type}}</div>
+                </div>
+            </td>
+            <td class="bn-table-cell">
+                <div>
+                    <div class="border-top"><a href="edit_order/{{c.binance_id}}"
+                                               class="btn btn-info btn-block">Editar</a></div>
+                    <div class="border-top"><a href="delete_order/{{c.binance_id}}"
+                                               class="btn btn-danger btnEliminacion btn-block">Eliminar</a></div>
+                    <div class="border-top"><a href="approve_order/{{c.binance_id}}"
+                                               class="btn btn-success btnEliminacion btn-block">Aprovar</a></div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}
