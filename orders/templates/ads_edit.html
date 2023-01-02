@@ -10,7 +10,7 @@
         <div class="card">
             <div class="card-body">
                 <form action="/save_edit_ad/" method="POST">{% csrf_token %}
-                    {{amount_form |crispy}}
+                    {{ad_form |crispy}}
                     <button type="submit" class="btn btn-success btn-block text-white">Save</button>
                 </form>
             </div>
