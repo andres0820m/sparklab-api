@@ -421,7 +421,7 @@ class BinanceInfoGetter(ABC):
                     asset_unit_price = price
                     quantity_in_usd = quantity
                     final_ad = {}
-                    if name == 'AE_Mejia':
+                    if name in self.config.parnerts:
                         return {'price': price, 'limit': min_limit, 'name': name}
                     if self.trm - asset_unit_price >= MAX_TRM_DIFFERENCE and quantity_in_usd >= 2300 and name not in [
                         'Amj_crypto', 'AE_Mejia']:
@@ -438,7 +438,7 @@ class BinanceInfoGetter(ABC):
                             final_price = MIN_LIMIT
                         else:
                             final_price = min_limit
-                        return {'price': price, 'limit': final_price,'name': name}
+                        return {'price': price, 'limit': final_price, 'name': name}
                     else:
                         return {'price': price + 0.01, 'limit': MIN_LIMIT, 'name': name}
 
