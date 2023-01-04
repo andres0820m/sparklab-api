@@ -253,7 +253,7 @@ class BinanceInfoGetter(ABC):
         while 1:
             self.trm = self.get_yahoo_data()
             print(self.trm)
-            time.sleep(10)
+            time.sleep(30)
 
     def __init_trm_value(self):
         threading.Thread(target=self.get_trm_value).start()

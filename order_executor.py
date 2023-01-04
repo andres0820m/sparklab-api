@@ -19,6 +19,7 @@ from constants import CONFIG_PATH, ORDER_STATUS_TO_RUN, AUT_USER, MAPPED_ACCOUNT
     PARTNER_IDS
 from orders_wrapped import OrderWrapped
 from utils import Dict2Class, left_only_numbers
+from ads_executor import AdsRunner
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 application = get_wsgi_application()
@@ -226,8 +227,11 @@ with open('binance.data', 'rb') as enc_file:
     data = json.loads(decrypted.decode("utf-8"))
     with open(CONFIG_PATH) as f:
         config = Dict2Class(yaml.load(f, Loader=SafeLoader))
-    listener = BinanceListener(data=data, name=config.user_name, config=config, order_wrapped=OrderWrapped())
+    listener = BinanceListener(data=data, name=config.user_name, config=config, order_wrapped=OrderWrapped(),
+                               use_trm=True)
 listener.join_wss_stream()
 time.sleep(3)
 executor = OrderExecutor(ec_path='banks_data.data', listener=listener)
+ads_runner = AdsRunner(listener=listener)
+ads_runner.run()
 executor.execute()
