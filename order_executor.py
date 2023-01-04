@@ -65,7 +65,7 @@ class OrderExecutor:
 
                     while order.fail_retry <= self.config.retry and order.status in ORDER_STATUS_TO_RUN:
                         try:
-
+                            self.order_wrapped.update_amount(amount=order.amount)
                             self.listener.send_message(binance_id=order.binance_id,
                                                        message="Se esta procesando tu orden en este momento")
                             order.status = 'running'
@@ -129,7 +129,6 @@ class OrderExecutor:
                             time.sleep(0.4)
                             self.listener.send_message(binance_id=order.binance_id,
                                                        message=self.config.thanks_message)
-                            self.order_wrapped.update_amount(amount=order.amount)
 
                             if self.config.fix_price:
                                 usdt_price = str(float(order.usdt_price) + float(config.amount_to_fix))
