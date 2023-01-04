@@ -106,3 +106,5 @@ SYMBOLS = {'ETH': 'ETHUSDT', 'BTC': 'BTCUSDT', 'BNB': 'BNBUSDT'}
 SPOT_PRICE_URL = 'https://api.binance.com/api/v3/ticker/price?symbol={}'
 TRANS_AMOUNT = [5000000, 3000000, 2000000]
 MIN_LIMIT = 700000
+MAPPED_ACCOUNTS_PYMES = {'Ahorros': 'Cuenta ahorros', 'Corriente': 'Cuenta corriente'}
+MAPPED_DOCUMETS_PYME = {'cc': 'CC', 'cc_ext': 'CE', 'pasaporte': 'PA', 'nit': 'NT'}
