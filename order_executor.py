@@ -136,7 +136,9 @@ class OrderExecutor:
                                 usdt_price = order.usdt_price
                             message = "Se acaban de comprar {} pesos colombianos, a un precio de {}".format(
                                 order.amount, usdt_price)
-                            self.__telegram_bot.send_message(chat_id=PARTNER_IDS[0], text=message)
+                            message1 = "Se acaban de comprar {} pesos colombianos, a un precio de {}".format(
+                                order.amount, str(order.usdt_price))
+                            self.__telegram_bot.send_message(chat_id=PARTNER_IDS[0], text=message1)
                             notifications = self.order_wrapped.get_notification()['is_active']
                             if notifications:
                                 for partner in PARTNER_IDS[1:]:
