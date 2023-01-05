@@ -130,3 +130,9 @@ class OrderWrapped:
         url = MAIN_URL.format('api/v1/orders/' + binance_id)
         data = self.__send_request(method='GET', url=url)
         return data
+
+    def get_notification(self):
+        url = MAIN_URL.format('notifications/')
+        data = self.__send_request(method='GET', url=url).json()
+        return data
+

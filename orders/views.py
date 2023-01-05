@@ -59,8 +59,15 @@ def home(request):
     orders = Order.objects.filter(user=request.user).filter(date__gt=time_threshold).filter(
         status__in=['waiting_for_review'])
     amount = locale.currency(float(AmountToBuy.objects.filter(user=request.user)[0].amount), grouping=True)
-    amount_form = AmountToBuyForm()
-    return render(request, "orders_check.html", {"orders": orders, 'amount': amount, 'amount_form': amount_form})
+    amount_to_buy = AmountToBuy.objects.get(user=request.user)
+    initial_data = {
+        'amount': amount_to_buy.amount,
+        'is_active': amount_to_buy.is_active
+    }
+    amount_form = AmountToBuyForm(initial=initial_data)
+    return render(request, "orders_check.html",
+                  {"orders": orders, 'amount': amount, 'is_active': amount_to_buy.is_active,
+                   'amount_form': amount_form})
 
 
 @login_required
@@ -103,7 +110,10 @@ def save_order(request):
 def save_amount(request):
     user = request.user
     amount = float(request.POST['amount'])
+    is_active = TRUE_OR_FALSE_MAP[request.POST.get('is_active', 'off')]
+    print(is_active)
     user_amount = AmountToBuy.objects.get(user=user)
+    user_amount.is_active = is_active
     user_amount.amount = amount
     user_amount.save()
     return redirect('/status')
@@ -308,3 +318,14 @@ class GetUser(APIView):
 
     def get(self, request):
         return Response(request.user.pk, status=status.HTTP_200_OK)
+
+
+class GetNotification(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        try:
+            return Response(AmountToBuy.objects.filter(user=request.user).values()[0],
+                            status=status.HTTP_200_OK)
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)

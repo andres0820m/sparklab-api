@@ -6,7 +6,6 @@
 {% load crispy_forms_tags %}
 <h1>ORDERS</h1>
 <div class="container" style="overflow-x:auto;">
-    <div><h6 class="font-italic"> Amount for buying: {{amount}}</h6></div>
      <form action="/edit_amount/" method="POST">{% csrf_token %}
                     {{amount_form |crispy}}
                     <button type="submit" class="btn btn-success btn-block text-white">change</button>
