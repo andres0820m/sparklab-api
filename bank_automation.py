@@ -126,10 +126,12 @@ class Bancolombia:
             for _ in range(2):
                 self.__controller.input_keyevent(keycodes.KEYCODE_DPAD_DOWN)
                 time.sleep(0.3)
+            time.sleep(1)
             self.__controller.input_text("nequi")
-            time.sleep(0.5)
+            time.sleep(2)
             self.__controller.click_coordinate((156, 590))
         else:
+            time.sleep(1)
             self.__controller.click_on_text('Bancolombia')
         self.__controller.click_on_text(account_text)
         self.__controller.input_text(num_account)
@@ -246,7 +248,6 @@ class Bancolombia:
                 )
                 if option == 0:
                     self.__controller.save_screen(binance_id)
-                    retry = 0
                     break
                 else:
                     if retry != 0:
