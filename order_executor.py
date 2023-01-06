@@ -79,7 +79,7 @@ class OrderExecutor:
                 order = orders[0]
                 while order.fail_retry <= self.config.retry and order.status in ORDER_STATUS_TO_RUN:
                     try:
-                        self.order_wrapped.update_amount(amount=order.amount)
+                        self.order_wrapped.update_amount(amount=-float(order.amount))
                         self.listener.send_message(binance_id=order.binance_id,
                                                    message="Se esta procesando tu orden en este momento")
                         order.status = 'running'
@@ -170,6 +170,7 @@ class OrderExecutor:
                     except WrongDataOrAccountAlreadySubscribe:
                         order.fail_retry = 3
                         order.status = 'waiting_for_review'
+                        self.order_wrapped.update_amount(amount=float(order.amount))
                         self.order_wrapped.update_order(order)
                         self.__telegram_bot.send_message(chat_id=AUT_USER,
                                                          text="datos incorrecto o cuenta ya inscrita en la orden {}".format(
@@ -179,6 +180,7 @@ class OrderExecutor:
                         order.fail_retry = 3
                         order.status = 'waiting_for_review'
                         self.order_wrapped.update_order(order)
+                        self.order_wrapped.update_amount(amount=float(order.amount))
                         self.__telegram_bot.send_message(chat_id=AUT_USER,
                                                          text="la orden {}, fallo pero se inscrbio la cuenta, borrar y volver a intentar".format(
                                                              order.binance_id))
@@ -186,6 +188,7 @@ class OrderExecutor:
                     except TransferFailAtTheEnd:
                         order.fail_retry = 0
                         order.status = 'waiting_for_review'
+                        self.order_wrapped.update_amount(amount=float(order.amount))
                         self.order_wrapped.update_order(order)
                         if order.bank.bank == "BBVA":
                             text = "la orden {} fallo al final  y se inscribio!! revisar app del banco !!"
@@ -203,7 +206,7 @@ class OrderExecutor:
                     except (BancolombiaError, NequiAccountError):
                         order.status = 'waiting_for_review'
                         self.order_wrapped.update_order(order)
-
+                        self.order_wrapped.update_amount(amount=float(order.amount))
                         self.__telegram_bot.send_message(chat_id=AUT_USER,
                                                          text="the order {} have wrong account data !!".format(
                                                              order.binance_id))
@@ -219,6 +222,7 @@ class OrderExecutor:
                             order.status = 'waiting_for_review'
                             order.fail_retry = 0
                         self.order_wrapped.update_order(order)
+                        self.order_wrapped.update_amount(amount=float(order.amount))
                         try:
                             img = Image.open('imgs/{}.png'.format(order.binance_id))
                             self.__telegram_bot.send_photo(chat_id=AUT_USER, img=img, caption='Error!!!'

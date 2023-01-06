@@ -48,7 +48,7 @@ class GetAmount(APIView):
         actual_amount = AmountToBuy.objects.filter(user=request.user).values()[0]
         actual_amount = AmountToBuy(**actual_amount)
         amount = float(request.data['amount'])
-        actual_amount.amount = actual_amount.amount - amount
+        actual_amount.amount = actual_amount.amount + amount
         actual_amount.save()
         return Response(actual_amount.amount, status=status.HTTP_200_OK)
 
