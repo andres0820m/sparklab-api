@@ -253,7 +253,7 @@ class BinanceInfoGetter(ABC):
         while 1:
             self.trm = self.get_yahoo_data()
             print(self.trm)
-            time.sleep(10)
+            time.sleep(30)
 
     def __init_trm_value(self):
         threading.Thread(target=self.get_trm_value).start()
@@ -358,7 +358,7 @@ class BinanceInfoGetter(ABC):
     def get_non_stable_price(self, asset, amount, banks, trade_type, fiat='COP'):
         asset_price = float(self.get_spot_data(asset=asset)['price'])
         if self.trm:
-            for trans_mount in TRANS_AMOUNT[1:]:
+            for trans_mount in TRANS_AMOUNT:
                 print(trans_mount)
                 data = {
                     "page": 1,
@@ -421,8 +421,6 @@ class BinanceInfoGetter(ABC):
                     asset_unit_price = price
                     quantity_in_usd = quantity
                     final_ad = {}
-                    if name == 'AE_Mejia':
-                        return {'price': price, 'limit': min_limit, 'name': name}
                     if self.trm - asset_unit_price >= MAX_TRM_DIFFERENCE and quantity_in_usd >= 2300 and name not in [
                         'Amj_crypto', 'AE_Mejia']:
                         final_ad['price'] = price
@@ -438,7 +436,7 @@ class BinanceInfoGetter(ABC):
                             final_price = MIN_LIMIT
                         else:
                             final_price = min_limit
-                        return {'price': price, 'limit': final_price,'name': name}
+                        return {'price': price, 'limit': final_price, 'name': name}
                     else:
                         return {'price': price + 0.01, 'limit': MIN_LIMIT, 'name': name}
 

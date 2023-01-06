@@ -19,4 +19,4 @@ class AdsForm(ModelForm):
 class AmountToBuyForm(ModelForm):
     class Meta:
         model = AmountToBuy
-        fields = ['amount', ]
+        fields = ['amount', 'is_active']
