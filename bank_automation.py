@@ -821,34 +821,21 @@ class BancolombiaPymeWrapped:
             return response
 
     def check_account(self, name, document, account, account_type, document_type):
-        data_list = []
+
         timestr = datetime.now().strftime("%H:%M:%S")
         ftr = [3600, 60, 1]
-        transfer_id = sum([a * b for a, b in zip(ftr, map(int, timestr.split(':')))])
-        data_list.append(
-            {"header": {"type": "verifyAccount", "id": "01032446189{}".format(transfer_id)}, "consumerId": "SVN",
-             "channelId": "NDB",
-             "clientIp": self.external_ip, "device": "Web",
-             "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
-             "transactionDate": self.get_time_for_transfer(), "accountType": account_type,
-             "accountNumber": 912000786853,
-             "verifyIdType": document_type, "verifyIdNumber": '1032446189', "businessDocumentType": "NT",
-             "businessDocument": self.__business_document, "clientDocument": self.__client_document,
-             "clientDocumentType": "CC"})
-        time.sleep(1)
 
         transfer_id = sum([a * b for a, b in zip(ftr, map(int, timestr.split(':')))])
-        data_list.append(
-            {"header": {"type": "verifyAccount", "id": "01032446189{}".format(transfer_id)}, "consumerId": "SVN",
-             "channelId": "NDB",
-             "clientIp": "10.5.31.115", "device": "Web",
-             "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
-             "transactionDate": self.get_time_for_transfer(), "accountType": account_type, "accountNumber": account,
-             "verifyIdType": document_type, "verifyIdNumber": document, "businessDocumentType": "NT",
-             "businessDocument": self.__business_document, "clientDocument": self.__client_document,
-             "clientDocumentType": "CC"})
+        data = {"header": {"type": "verifyAccount", "id": "01032446189{}".format(transfer_id)}, "consumerId": "SVN",
+                "channelId": "NDB",
+                "clientIp": "10.5.31.115", "device": "Web",
+                "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
+                "transactionDate": self.get_time_for_transfer(), "accountType": account_type, "accountNumber": account,
+                "verifyIdType": document_type, "verifyIdNumber": document, "businessDocumentType": "NT",
+                "businessDocument": self.__business_document, "clientDocument": self.__client_document,
+                "clientDocumentType": "CC"}
 
-        data = {"data": data_list}
+        data = {"data": [data]}
         self.CHECK_ACCOUNT_HEADERS['Authorization'] = 'Bearer {}'.format(self.token)
 
         response = requests.post(
@@ -873,68 +860,41 @@ class BancolombiaPymeWrapped:
         timestr = datetime.now().strftime("%H:%M:%S")
         ftr = [3600, 60, 1]
         transfer_id = sum([a * b for a, b in zip(ftr, map(int, timestr.split(':')))])
-        print("01032446189{}".format(transfer_id))
-        data_list = []
-        data_list.append({"header": {"type": "saving-account-transfer", "id": "01032446189{}".format(transfer_id)},
-                          "consumerId": "SVN",
-                          "channelId": "NDB",
-                          "clientIp": self.external_ip, "device": "Web",
-                          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
-                          "transactionDate": self.get_time_for_transfer(), "clientDocumentType": document_type,
-                          "clientDocument": "1032446189",
-                          "businessDocumentType": "NT", "businessDocument": "901658576",
-                          "targetClientInfo": {"targetClientDocumentType": "", "targetClientDocument": ""},
-                          "sourceAccountInfo": {"sourceProductType": "Cuenta ahorros",
-                                                "sourceProductNumber": "04000005253"},
-                          "targetProductInfo": {"targetProductType": account_type, "targetProductNumber": '912000786853'},
-                          "transferInfo": {"trackingNumber": self.get_transfer_id(), "transferValue": amount,
-                                           "reference1": "sparklab",
-                                           "reference2": "",
-                                           "reference3": "", "transactionCodeDebit": "8561",
-                                           "transactionCodeCredit": "8567",
-                                           "currencyCode": "COP",
-                                           "movementDescriptionDebit": "PAGO DE PROV SPARKLAB SAS",
-                                           "movementDescriptionCredit": "PAGO DE PROV SPARKLAB SAS",
-                                           "deviceCode": "SVN"},
-                          "officeInfo": {"entryOfficeCreditTransaction": "", "entryOfficeDebitTransaction": ""},
-                          "sessionId": self.detect_id, "authenticateTransaction": {"authenticationtType": "softoken",
-                                                                                   "authenticationValue": [
-                                                                                       {"key": "softoken",
-                                                                                        "value": key}]},
-                          "deviceId2": ""})
-        time.sleep(1)
-        transfer_id = sum([a * b for a, b in zip(ftr, map(int, timestr.split(':')))])
-        data_list.append({"header": {"type": "saving-account-transfer", "id": "01032446189{}".format(transfer_id)},
-                          "consumerId": "SVN",
-                          "channelId": "NDB",
-                          "clientIp": self.external_ip, "device": "Web",
-                          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
-                          "transactionDate": self.get_time_for_transfer(), "clientDocumentType": document_type,
-                          "clientDocument": "1032446189",
-                          "businessDocumentType": "NT", "businessDocument": "901658576",
-                          "targetClientInfo": {"targetClientDocumentType": "", "targetClientDocument": ""},
-                          "sourceAccountInfo": {"sourceProductType": "Cuenta ahorros",
-                                                "sourceProductNumber": "04000005253"},
-                          "targetProductInfo": {"targetProductType": account_type, "targetProductNumber": account},
-                          "transferInfo": {"trackingNumber": self.get_transfer_id(), "transferValue": amount,
-                                           "reference1": "sparklab",
-                                           "reference2": "",
-                                           "reference3": "", "transactionCodeDebit": "8561",
-                                           "transactionCodeCredit": "8567",
-                                           "currencyCode": "COP",
-                                           "movementDescriptionDebit": "PAGO DE PROV SPARKLAB SAS",
-                                           "movementDescriptionCredit": "PAGO DE PROV SPARKLAB SAS",
-                                           "deviceCode": "SVN"},
-                          "officeInfo": {"entryOfficeCreditTransaction": "", "entryOfficeDebitTransaction": ""},
-                          "sessionId": self.detect_id, "authenticateTransaction": {"authenticationtType": "softoken",
-                                                                                   "authenticationValue": [
-                                                                                       {"key": "softoken",
-                                                                                        "value": key}]},
-                          "deviceId2": ""})
-        data = {"data": data_list}
+        data = {"header": {"type": "saving-account-transfer", "id": "01032446189{}".format(transfer_id)},
+                "consumerId": "SVN",
+                "channelId": "NDB",
+                "clientIp": self.external_ip, "device": "Web",
+                "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
+                "transactionDate": self.get_time_for_transfer(), "clientDocumentType": document_type,
+                "clientDocument": "1032446189",
+                "businessDocumentType": "NT", "businessDocument": "901658576",
+                "targetClientInfo": {"targetClientDocumentType": "", "targetClientDocument": ""},
+                "sourceAccountInfo": {"sourceProductType": "Cuenta ahorros",
+                                      "sourceProductNumber": "04000005253"},
+                "targetProductInfo": {"targetProductType": account_type, "targetProductNumber": account},
+                "transferInfo": {"trackingNumber": self.get_transfer_id(), "transferValue": amount,
+                                 "reference1": "sparklab",
+                                 "reference2": "",
+                                 "reference3": "", "transactionCodeDebit": "8561",
+                                 "transactionCodeCredit": "8567",
+                                 "currencyCode": "COP",
+                                 "movementDescriptionDebit": "PAGO DE PROV SPARKLAB SAS",
+                                 "movementDescriptionCredit": "PAGO DE PROV SPARKLAB SAS",
+                                 "deviceCode": "SVN"},
+                "officeInfo": {"entryOfficeCreditTransaction": "", "entryOfficeDebitTransaction": ""},
+                "sessionId": self.detect_id, "authenticateTransaction": {"authenticationtType": "softoken",
+                                                                         "authenticationValue": [
+                                                                             {"key": "softoken",
+                                                                              "value": key}]},
+                "deviceId2": ""}
+        data = {"data": [data]}
         self.TRANSFER_HEADERS['Authorization'] = 'Bearer {}'.format(self.token)
         response = requests.post(
             'https://sucursalvirtualpyme.bancolombia.com/pyme-bancolombia/edge-service/transfer',
             headers=self.TRANSFER_HEADERS,
             json=data)
         return response
+
+# 0093
+
+{'errors': [{'code': '0093', 'detail': 'Se ha presentado un error general realizando la transacción. Si se encontraba realizando una operación monetaria por favor verifique su saldo antes de intentar nuevamente la transacción. Si tiene alguna inquietd por favor comuníquese con nuestra línea de atención al cliente.', 'source': '/v4/saving-account-transfer', 'detailTecnical': 'net.minidev.json.parser.ParseException: Unexpected token t at position 158.', 'providerCode': '', 'providerPath': '', 'title': 'ERROR'}]}
