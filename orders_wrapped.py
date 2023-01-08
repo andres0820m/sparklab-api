@@ -83,9 +83,9 @@ class OrderWrapped:
         data = self.__send_request(method='GET', url=url)
         return data.json()[0]['amount']
 
-    def update_amount(self, amount):
+    def update_amount(self, amount, type_of_operation):
         url = MAIN_URL.format('get_amount/')
-        json_data = {'amount': amount}
+        json_data = {'amount': amount, 'type':type_of_operation}
         return self.__send_request(method='POST', url=url, json_data=json_data)
 
     def update_order(self, order: Order):

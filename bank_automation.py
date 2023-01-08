@@ -849,11 +849,29 @@ class BancolombiaPymeWrapped:
             return False
 
     def __get_dynamic_key(self):
-        self.__controller.find_text('.')
-        all_text = self.__controller.get_all_text()
-        for text in all_text:
-            if len(str_only_numbers(text)) == 6:
+        keep_running = True
+        number_of_positive = 0
+        old_text = ''
+        new_text = ''
+        while keep_running:
+            for i in range(4):
+                self.__controller.find_text('.')
+                all_text = self.__controller.get_all_text()
+                for text in all_text:
+                    if len(str_only_numbers(text)) == 6:
+                        new_text = text
+                        print(text, i, number_of_positive)
+                        if i == 0:
+                            old_text = new_text
+                        break
+                if old_text == new_text:
+                    number_of_positive += 1
+                    old_text = new_text
+            if number_of_positive == 4:
                 return text
+            else:
+                number_of_positive = 0
+                old_text = ''
 
     def transfer(self, account, amount, document, document_type, account_type, transfer_id):
         key = self.__get_dynamic_key()
@@ -895,6 +913,4 @@ class BancolombiaPymeWrapped:
             json=data)
         return response
 
-# 0093
-
-{'errors': [{'code': '0093', 'detail': 'Se ha presentado un error general realizando la transacción. Si se encontraba realizando una operación monetaria por favor verifique su saldo antes de intentar nuevamente la transacción. Si tiene alguna inquietd por favor comuníquese con nuestra línea de atención al cliente.', 'source': '/v4/saving-account-transfer', 'detailTecnical': 'net.minidev.json.parser.ParseException: Unexpected token t at position 158.', 'providerCode': '', 'providerPath': '', 'title': 'ERROR'}]}
+# 0093 0802 0035
