@@ -105,4 +105,4 @@ HTML_HEADERS = {
 SYMBOLS = {'ETH': 'ETHUSDT', 'BTC': 'BTCUSDT', 'BNB': 'BNBUSDT'}
 SPOT_PRICE_URL = 'https://api.binance.com/api/v3/ticker/price?symbol={}'
 TRANS_AMOUNT = [5000000, 3000000, 2000000]
-MIN_LIMIT = 1000000
+MIN_LIMIT = 700000

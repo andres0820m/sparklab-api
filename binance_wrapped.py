@@ -398,7 +398,7 @@ class BinanceInfoGetter(ABC):
     def get_stable_price(self, asset, ad_config, banks, trade_type, fiat='COP'):
         use_limit = ad_config['use_min_limit']
         min_ad_limit = float(ad_config['min_limit'])
-
+        final_min = float('inf')
         if self.trm:
             for trans_mount in TRANS_AMOUNT:
                 print(trans_mount)
@@ -421,6 +421,8 @@ class BinanceInfoGetter(ABC):
                     asset_unit_price = price
                     quantity_in_usd = quantity
                     final_ad = {}
+                    if min_limit < final_min:
+                        final_min = min_limit
                     if self.trm - asset_unit_price >= MAX_TRM_DIFFERENCE and quantity_in_usd >= 2300 and name not in [
                         'Amj_crypto', 'AE_Mejia']:
                         final_ad['price'] = price
@@ -429,14 +431,14 @@ class BinanceInfoGetter(ABC):
                         break
                 if final_ad:
                     print(asset, final_ad['price'])
-                    if final_ad['min_limit'] >= (MIN_LIMIT + (MIN_LIMIT * 0.2)):
+                    if final_min >= (MIN_LIMIT + (MIN_LIMIT * 0.2)):
                         if not use_limit:
-                            final_price = final_ad['min_limit'] - (final_ad['min_limit'] * 0.2)
-                        elif float(final_ad['min_limit']) <= min_limit:
-                            final_price = MIN_LIMIT
+                            final_min_price = final_min - (final_min * 0.2)
+                        elif float(final_min) <= min_ad_limit:
+                            final_min_price = MIN_LIMIT
                         else:
-                            final_price = min_limit
-                        return {'price': price, 'limit': final_price, 'name': name}
+                            final_min_price = min_ad_limit
+                        return {'price': price, 'limit': final_min_price, 'name': name}
                     else:
                         return {'price': price + 0.01, 'limit': MIN_LIMIT, 'name': name}
 
